@@ -1,0 +1,5 @@
+GAMEDIR="./Games/"
+MAXPLAYERS=25
+
+export GAMEDIR
+export MAXPLAYERS
