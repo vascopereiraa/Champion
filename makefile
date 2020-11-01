@@ -13,4 +13,4 @@ cliente.o: ./Cliente/cliente.c
 	gcc -c ./Cliente/cliente.c -o ./Cliente/cliente.o
 
 clean:
-	rm *.o
+	find . -name '*.o' -delete
