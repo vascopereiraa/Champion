@@ -18,8 +18,8 @@ Games/Perguntas/.idea/**
 Games/Perguntas/CMakeLists.txt
 Games/Perguntas/cmake-build-debug/**
 Games/perguntas.o
-Games/g_perguntas
 
+Games/g_perguntas
 arbitro
 cliente
 

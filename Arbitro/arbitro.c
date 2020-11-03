@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "arbitro.h"
 
@@ -22,7 +23,7 @@ int main(int argc, char* argv[]) {
     char* GAMEDIR;
     if (getenv("GAMEDIR") == NULL) {  //NOT DEFINED
         GAMEDIR = GAMES;
-        fprintf(stderr, "[ERROR] GAMEDIR NOT DEFINED => GAMEDIR = %s\n", GAMES);
+        fprintf(stderr, "[ERRO] GAMEDIR nao definido -> GAMEDIR = \"%s\"\n", GAMES);
     }
     else
         GAMEDIR = getenv("GAMEDIR");
@@ -30,56 +31,66 @@ int main(int argc, char* argv[]) {
     int MAXPLAYERS;
     if (getenv("MAXPLAYERS") == NULL) {  //NOT DEFINED
         MAXPLAYERS = PLAYER_LIMIT;
-        fprintf(stderr, "[ERROR] MAXPLAYERS NOT DEFINED => MAXPLAYERS = %d\n", MAXPLAYERS);
+        fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", MAXPLAYERS);
     }
     else {
         if (atoi(getenv("MAXPLAYERS")) == 0) {  //WRONG TYPE
             MAXPLAYERS = PLAYER_LIMIT;
-            fprintf(stderr, "[ERROR] MAXPLAYERS NOT DEFINED => MAXPLAYERS = %d\n", MAXPLAYERS);
+            fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", MAXPLAYERS);
         }
         else
             MAXPLAYERS = atoi(getenv("MAXPLAYERS"));
     }
 
     /* GET COMMAND LINE ARGUMENTS
-     * FORMAT: ./arbitro DURACAO=123 ESPERA=12
+     * FORMAT: ./arbitro -d duration -w wait
+     *    Time passed in minutes (m);
+     *    Minimum duration and waiting time of 1 minute (m);
+     *    OPT:
+     *      -d / -D -> Duration;
+     *      -w / -W -> Wait;
      */
-    if (argc != 3) {
-        fprintf(stderr, "[FATAL] NUMBER OF COMMAND LINE ARGUMENTS INVALID\n");
-        exit(2);
+
+    int DURATION = -1, WAIT = -1;
+    int opt, aux;
+
+    // Check max args
+    if (argc > 5) {
+        fprintf(stderr, "[FATAL] Numero maximo de argumentos excedido!\n Limite: 5 -> Recebeu: %d\n", argc);
+        exit(EXIT_FAILURE);
     }
 
-    int DURACAO = 0, ESPERA = 0;
-    char helper[50];
-    for (int i = 8; i < strlen(argv[1]); i++) {
-        helper[i-8] = argv[1][i];
+    while ((opt = getopt(argc, argv, "d:w:D:W:")) != -1) {
+        switch (opt) {
+            case 'd':
+            case 'D':
+                aux = atoi(optarg);
+                if (aux >= 1)
+                    DURATION = aux;
+                break;
+            case 'w':
+            case 'W':
+                aux = atoi(optarg);
+                if (aux >= 1)
+                    WAIT = aux;
+                break;
+            default:
+                fprintf(stderr, "[ERRO] Opcao nao existe\n");
+        }
     }
-    helper[strlen(helper)] = '\0';
-    DURACAO = atoi(helper);
 
-    // Clear helper
-    for(int i = 0; i < 50; i++)
-        helper[i] = ' ';
-
-    for (int i = 7; i < strlen(argv[2]); i++) {
-        helper[i-7] = argv[2][i];
+    // WRONG ARGUMENT VALUES
+    if (DURATION == -1) {
+        DURATION = TIME;
+        fprintf(stderr, "[ERRO] DURATION nao definida -> DURATION = %d\n", DURATION);
     }
-    helper[strlen(helper)] = '\0';
-    ESPERA = atoi(helper);
-
-    // Wrong Arguments
-    if (DURACAO == 0) {
-        DURACAO = TIME;
-        fprintf(stderr, "[ERROR] DURACAO NOT DEFINED => DURACAO = %d\n", TIME);
-    }
-    if(ESPERA == 0) {
-        ESPERA = WAIT;
-        fprintf(stderr, "[ERROR] ESPERA NOT DEFINED => ESPERA = %d\n", WAIT);
+    if(WAIT == -1) {
+        WAIT = WAITING_TIME;
+        fprintf(stderr, "[ERRO] WAIT nao definida -> WAIT = %d\n", WAIT);
     }
 
     // PRINT INITIALIZATION
     printf("GAMEDIR: %s\tMAXPLAYERS: %d\n", GAMEDIR, MAXPLAYERS);
-    printf("DURACAO: %d\tESPERA:%d\n", DURACAO, ESPERA);
-
+    printf("DURATION: %d\tWAIT:%d\n", DURATION, WAIT);
     exit(EXIT_SUCCESS);
 }
