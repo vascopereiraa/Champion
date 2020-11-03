@@ -14,6 +14,6 @@
 #include "cliente.h"
 
 int main() {
-    printf("Hello, World!\n");
+    printf("Ola Cliente!\n");
     return 0;
 }
