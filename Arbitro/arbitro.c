@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", MAXPLAYERS);
         }
         else
-            MAXPLAYERS = strtol(getenv("MAXPLAYERS"), NULL, 10);
+            MAXPLAYERS = (int) strtol(getenv("MAXPLAYERS"), NULL, 10);
     }
 
     /* GET COMMAND LINE ARGUMENTS
@@ -55,15 +55,15 @@ int main(int argc, char* argv[]) {
      */
 
     int DURATION = -1, WAIT = -1;
-    int opt, aux, checkD = 0, checkW = 0;
-
+    int opt, checkD = 0, checkW = 0;
+    long int aux;
     while ((opt = getopt(argc, argv, "d:w:D:W:")) != -1) {
         switch (opt) {
             case 'd':
             case 'D':
                 aux = strtol(optarg, NULL, 10);
                 if (aux >= 1 && checkD == 0) {
-                    DURATION = aux;
+                    DURATION = (int) aux;
                     checkD++;
                 }
                 break;
@@ -71,12 +71,15 @@ int main(int argc, char* argv[]) {
             case 'W':
                 aux = strtol(optarg, NULL, 10);
                 if (aux >= 1 && checkW == 0) {
-                    WAIT = aux;
+                    WAIT = (int) aux;
                     checkW++;
                 }
                 break;
             default:
-                fprintf(stderr, "[ERRO] Opcao nao existe\n");
+                if (optopt == 'd' || optopt == 'D' || optopt == 'w' || optopt == 'W')
+                    fprintf(stderr, "[ERRO] Opcao -%c requer um argumento -> Valor padrao assumido\n", optopt);
+                else
+                    fprintf(stderr, "[ERRO] Opcao '-%c' nao existe\n", optopt);
         }
 
         if (checkD == 1 && checkW == 1)

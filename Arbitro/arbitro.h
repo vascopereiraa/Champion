@@ -15,7 +15,7 @@
 // CONSTANTS
 #define PLAYER_LIMIT 10
 #define GAMES "."
-#define TIME 5
+#define TIME 10
 #define WAITING_TIME 2
 
 struct jogadores {
