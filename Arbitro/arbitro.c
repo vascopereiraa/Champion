@@ -34,49 +34,53 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", MAXPLAYERS);
     }
     else {
-        if (atoi(getenv("MAXPLAYERS")) == 0) {  //WRONG TYPE
+        if (strtol(getenv("MAXPLAYERS"), NULL, 10) == 0) {  //WRONG TYPE
             MAXPLAYERS = PLAYER_LIMIT;
             fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", MAXPLAYERS);
         }
         else
-            MAXPLAYERS = atoi(getenv("MAXPLAYERS"));
+            MAXPLAYERS = strtol(getenv("MAXPLAYERS"), NULL, 10);
     }
 
     /* GET COMMAND LINE ARGUMENTS
      * FORMAT: ./arbitro -d duration -w wait
      *    Time passed in minutes (m);
      *    Minimum duration and waiting time of 1 minute (m);
+     *    When both DURATION and WAIT are filled with user info -> exit loop;
+     *    The first argument passed is the one saved
+     *
      *    OPT:
      *      -d / -D -> Duration;
      *      -w / -W -> Wait;
      */
 
     int DURATION = -1, WAIT = -1;
-    int opt, aux;
-
-    // Check max args
-    if (argc > 5) {
-        fprintf(stderr, "[FATAL] Numero maximo de argumentos excedido!\n Limite: 5 -> Recebeu: %d\n", argc);
-        exit(EXIT_FAILURE);
-    }
+    int opt, aux, checkD = 0, checkW = 0;
 
     while ((opt = getopt(argc, argv, "d:w:D:W:")) != -1) {
         switch (opt) {
             case 'd':
             case 'D':
-                aux = atoi(optarg);
-                if (aux >= 1)
+                aux = strtol(optarg, NULL, 10);
+                if (aux >= 1 && checkD == 0) {
                     DURATION = aux;
+                    checkD++;
+                }
                 break;
             case 'w':
             case 'W':
-                aux = atoi(optarg);
-                if (aux >= 1)
+                aux = strtol(optarg, NULL, 10);
+                if (aux >= 1 && checkW == 0) {
                     WAIT = aux;
+                    checkW++;
+                }
                 break;
             default:
                 fprintf(stderr, "[ERRO] Opcao nao existe\n");
         }
+
+        if (checkD == 1 && checkW == 1)
+            break;
     }
 
     // WRONG ARGUMENT VALUES
@@ -90,6 +94,7 @@ int main(int argc, char* argv[]) {
     }
 
     // PRINT INITIALIZATION
+    printf("Configuracoes do Arbitro: \n");
     printf("GAMEDIR: %s\tMAXPLAYERS: %d\n", GAMEDIR, MAXPLAYERS);
     printf("DURATION: %d\tWAIT:%d\n", DURATION, WAIT);
     exit(EXIT_SUCCESS);
