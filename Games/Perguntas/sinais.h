@@ -19,5 +19,6 @@
 int pontuacao;
 
 void timer(int s, siginfo_t *info, void *context);
+void endGame(int s, siginfo_t *info, void *context);
 
 #endif //PERGUNTAS_SINAIS_H

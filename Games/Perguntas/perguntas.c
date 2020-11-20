@@ -384,20 +384,25 @@ int main() {
     actionTimer.sa_flags = SA_SIGINFO;
     sigaction(SIGALRM, &actionTimer, NULL);
 
+    struct sigaction actionEndGame;
+    actionEndGame.sa_sigaction = endGame;
+    actionEndGame.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &actionEndGame, NULL);
+
     // DESCRICAO
     printf("\t\tJOGO DAS PERGUNTAS\n");
     printf("O jogo consiste em acertar o maior numero de perguntas possivel.\n"
            "Sera apresentada a questao, seguida de 4 hipoteses de escolha. \n"
            "Para responder basta indicar o numero da solucao pretendida.\n"
-           "Cada pergunta em um tempo limite para responder de %d segundos\n"
-           "Entre cada pergunta existe um intervalo de %d segundos", TIME, INT);
+           "Cada pergunta em um tempo limite para responder de %d segundos.\n"
+           "Entre cada pergunta existe um intervalo de %d segundos.\n", TIME, INT);
 
     sleep(WAIT);
     for (int count = 0; count < MAXPERGUNTAS; count++) {
         system("clear");
         printf("\t\tJOGO DAS PERGUNTAS\n");
         puts("-----------------------------------------------");
-        printf("Pergunta %d\tTempo: %d\n", count + 1, TIME);
+        printf("Pergunta %d\tTempo: %d\tPontuacao: %d\n", count + 1, TIME, pontuacao);
         printf("QUESTAO: %s\n", lista[count].pergunta);
         printf("1: %s\t2: %s\n3: %s\t4: %s\n\n",
                lista[count].respostas[0], lista[count].respostas[1],
@@ -428,7 +433,7 @@ int main() {
     }
 
     puts("\n-----------------------------------------------");
-    printf("Pontuacao Final: %d", pontuacao);
+    printf("Pontuacao Final: %d\n\n", pontuacao);
 
     exit(pontuacao);
 }
