@@ -14,14 +14,19 @@
 
 // CONSTANTS
 #define PLAYER_LIMIT 10
-#define GAMES "."
+#define GAMES "./Games"
 #define TIME 10
 #define WAITING_TIME 2
 
-struct jogadores {
+typedef struct {
     char nome[200];
     char jogo[200];
     int pontuacao;
-};
+} jogadores;
+
+typedef struct {
+    int pid_jogo;
+} msg_jogo;
+
 
 #endif //ARBITRO_ARBITRO_H
