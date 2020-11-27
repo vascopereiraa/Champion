@@ -1,13 +1,14 @@
 all: jogo.o arbitro.o cliente.o
 	gcc ./Games/perguntas.o -o ./Games/g_perguntas
-	gcc ./Arbitro/arbitro.o -o arbitro
+	gcc ./Arbitro/arbitro.o ./Arbitro/initConfig.c -o arbitro
 	gcc ./Cliente/cliente.o -o cliente
 
 jogo.o: ./Games/Perguntas/perguntas.c ./Games/Perguntas/perguntas.h
 	gcc -c ./Games/Perguntas/perguntas.c -o ./Games/perguntas.o
 
-arbitro.o: ./Arbitro/arbitro.c ./Arbitro/arbitro.h
+arbitro.o: ./Arbitro/arbitro.c ./Arbitro/initConfig.c  ./Arbitro/arbitro.h
 	gcc -c ./Arbitro/arbitro.c -o ./Arbitro/arbitro.o
+	gcc -c ./Arbitro/initConfig.c -o ./Arbitro/initConfig.o
 
 cliente.o: ./Cliente/cliente.c ./Cliente/cliente.h
 	gcc -c ./Cliente/cliente.c -o ./Cliente/cliente.o
@@ -16,7 +17,7 @@ jogo: jogo.o
 	gcc ./Games/perguntas.o -o ./Games/g_perguntas
 
 arbitro: arbitro.o
-	gcc ./Arbitro/arbitro.o -o arbitro
+	gcc ./Arbitro/arbitro.o ./Arbitro/initConfig.c -o arbitro
 
 cliente: cliente.o
 	gcc ./Cliente/cliente.o -o cliente
