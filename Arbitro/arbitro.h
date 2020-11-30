@@ -12,11 +12,14 @@
 #ifndef ARBITRO_ARBITRO_H
 #define ARBITRO_ARBITRO_H
 
-// CONSTANTS
+// SETUP CONSTANTS
 #define PLAYER_LIMIT 10
 #define GAMES "."
 #define TIME 10
 #define WAITING_TIME 2
+
+// CONSTANTS
+#define BUFF_SIZE 4096
 
 typedef struct {
     int MAXPLAYERS;

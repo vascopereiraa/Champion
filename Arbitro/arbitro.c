@@ -18,7 +18,7 @@
 
 #include "arbitro.h"
 
-/*void criaJogo() {
+void criaJogo(const init* setup) {
 
     int i = 0, res, pid, canalLeitura[2], canalEscrita[2], estado;
     DIR* dir;
@@ -26,7 +26,7 @@
     char listaJogos[10][100];
 
     // Abrir pasta
-    dir = opendir(GAMES);
+    dir = opendir(setup->GAMEDIR);
     if(dir == NULL)
         exit(2);
 
@@ -52,7 +52,7 @@
     res = fork();
     if(res == 0) {
         pid = getpid();
-        printf("Sou o filho");
+        printf("[%4d] Sou o filho\n", pid);
         
         // Atribuir saida e entrada de dados para o pipe
         close(canalLeitura[0]);
@@ -67,21 +67,35 @@
 
         // Mudar diretoria corrente
         // todo: acrescentar verificacao da diretoria
-        chdir(GAMES);
+        chdir(setup->GAMEDIR);
         execl(listaJogos[0], listaJogos[0], NULL);
 
-        fprintf(stderr, "[%4d] FILHO: Erro a executar o jogo", pid);
+        fprintf(stderr, "[%4d] FILHO: Erro a executar o jogo\n", pid);
         exit(10);
     }
     close(canalLeitura[1]);
     close(canalEscrita[0]);
 
-    // Troca de dados com o cliente
+    int n = 1;
+    while(n) {
+        char string[BUFF_SIZE];
 
+        n = read(canalLeitura[0], string, sizeof(string) - 1);
+        if(n <= 0)
+            break;
+        string[n] = '\0';
+        printf("%s", string);
+
+        n = scanf("%s", string);
+        string[n] = '\0';
+        write(canalEscrita[1], string, sizeof(string));
+    }
+
+    // Troca de dados com o cliente
     wait(&estado);
     if(WIFEXITED(estado))
         printf("%d\n\n", WEXITSTATUS(estado));
-}*/
+}
 
 int main(int argc, char* argv[]) {
 
@@ -91,8 +105,9 @@ int main(int argc, char* argv[]) {
     printInit(setup);
 
     // msg_jogo jogo1 = criaJogo();
-    // criaJogo();
+    criaJogo(&setup);
 
 
+    free(setup.GAMEDIR);
     exit(EXIT_SUCCESS);
 }
