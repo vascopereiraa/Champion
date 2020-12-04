@@ -17,8 +17,9 @@
 #include <sys/wait.h>
 
 #include "arbitro.h"
+#include "comunicacao.h"
 
-void criaJogo(const init* setup) {
+/* void criaJogo(const init* setup) {
 
     int i = 0, res, pid, canalLeitura[2], canalEscrita[2], estado;
     DIR* dir;
@@ -95,7 +96,7 @@ void criaJogo(const init* setup) {
     wait(&estado);
     if(WIFEXITED(estado))
         printf("%d\n\n", WEXITSTATUS(estado));
-}
+} */
 
 int main(int argc, char* argv[]) {
 
@@ -105,7 +106,7 @@ int main(int argc, char* argv[]) {
     printInit(setup);
 
     // msg_jogo jogo1 = criaJogo();
-    criaJogo(&setup);
+    // criaJogo(&setup);
 
 
     free(setup.GAMEDIR);
