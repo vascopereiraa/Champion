@@ -115,12 +115,11 @@ int main(int argc, char* argv[]) {
     FD_ZERO(&fds);
     int fd = criaPipeArbitro(&fds);
 
-    FD_SET(0, &fds);
     char cmd[200];
     do {
         printf("Comando: ");
         fflush(stdout);
-
+        FD_SET(0, &fds);
         int res = select(fd + 1, &fds, NULL, NULL, NULL);
         if (res > 0 && FD_ISSET(0, &fds))
             scanf("%s", cmd);
@@ -136,7 +135,7 @@ int main(int argc, char* argv[]) {
                n = write(fdr, &coms, sizeof(comunicacao));
                close(fdr);
                puts(" ");
-               printf("ESCREVI:\nPID: %d\nNome: %s\nMensagem: %s\nResposta: %s\nCodigo_Erro: %d\nPipe_Cliente: %s",
+               printf("ESCREVI:\nPID: %d\nNome: %s\nMensagem: %s\nResposta: %s\nCodigo_Erro: %d\nPipe_Cliente: %s\n",
                       coms.pid, coms.nomeJogador, coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente);
             }
     } while(strcmp(cmd, "sair") != 0);
