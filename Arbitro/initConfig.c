@@ -14,7 +14,7 @@
 #include <string.h>
 #include <getopt.h>
 
-#include "arbitro.h"
+#include "initConfig.h"
 
 char* getGamedir() {
 

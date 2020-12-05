@@ -15,8 +15,10 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/wait.h>
+#include <sys/select.h>
+#include <fcntl.h>
 
-#include "arbitro.h"
+#include "initConfig.h"
 #include "comunicacao.h"
 
 /* void criaJogo(const init* setup) {
@@ -102,12 +104,47 @@ int main(int argc, char* argv[]) {
 
     setbuf(stdout, NULL);
 
+    comunicacao coms;
+
+    // Definicao do Ambiente
     const init setup = initialization(argc, argv);
     printInit(setup);
 
-    // msg_jogo jogo1 = criaJogo();
-    // criaJogo(&setup);
+    // Criacao do NamedPipe do Arbitro
+    fd_set  fds;
+    FD_ZERO(&fds);
+    int fd = criaPipeArbitro(&fds);
 
+    FD_SET(0, &fds);
+    char cmd[200];
+    do {
+        printf("Comando: ");
+        fflush(stdout);
+
+        int res = select(fd + 1, &fds, NULL, NULL, NULL);
+        if (res > 0 && FD_ISSET(0, &fds))
+            scanf("%s", cmd);
+        else
+            if (res > 0 && FD_ISSET(fd, &fds)) {
+               int n = read(fd, &coms, sizeof(comunicacao));
+               printf("RECEBI:\nPID: %d\nNome: %sMensagem: %s\n", coms.pid, coms.nomeJogador, coms.mensagem);
+
+               strcpy(coms.resposta, "ok!");
+               sprintf(coms.pipeCliente, FIFO_CLI, coms.pid);
+               coms.cdgErro = 0;
+               int fdr = open(coms.pipeCliente, O_WRONLY);
+               n = write(fdr, &coms, sizeof(comunicacao));
+               close(fdr);
+               puts(" ");
+               printf("ESCREVI:\nPID: %d\nNome: %s\nMensagem: %s\nResposta: %s\nCodigo_Erro: %d\nPipe_Cliente: %s",
+                      coms.pid, coms.nomeJogador, coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente);
+            }
+    } while(strcmp(cmd, "sair") != 0);
+
+
+    // Fechar o NamedPipe do Arbitro
+    close(fd);
+    unlink(FIFO_ARB);
 
     free(setup.GAMEDIR);
     exit(EXIT_SUCCESS);

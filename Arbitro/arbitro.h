@@ -12,22 +12,6 @@
 #ifndef ARBITRO_ARBITRO_H
 #define ARBITRO_ARBITRO_H
 
-// SETUP CONSTANTS
-#define PLAYER_LIMIT 10
-#define GAMES "."
-#define TIME 10
-#define WAITING_TIME 2
-
-// CONSTANTS
-#define BUFF_SIZE 4096
-
-typedef struct {
-    int MAXPLAYERS;
-    int DURATION;
-    int WAIT;
-    char *GAMEDIR;
-} init;
-
 typedef struct {
     char nome[200];
     char jogo[200];
@@ -38,10 +22,6 @@ typedef struct {
     int pid_jogo;
 } msg_jogo;
 
-char* getGamedir();
-int getMaxPlayers();
-void getCmdLnArgs(int argc, char **argv, int* D, int* W);
-init initialization(int argc, char **argv);
-void printInit(init a);
+
 
 #endif //ARBITRO_ARBITRO_H

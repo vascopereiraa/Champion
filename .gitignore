@@ -12,6 +12,7 @@ Arbitro/CMakeLists.txt
 Arbitro/cmake-build-debug/**
 Arbitro/arbitro.o
 Arbitro/initConfig.o
+Arbitro/comunicacao.o
 
 Games/Perguntas/cmake-build-debug
 Games/Perguntas/.idea
