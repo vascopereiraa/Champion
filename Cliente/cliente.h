@@ -12,9 +12,18 @@
 #ifndef CLIENTE_CLIENTE_H
 #define CLIENTE_CLIENTE_H
 
-typedef struct Cliente cliente;
-struct Cliente {
-    char nome[200];
-};
+#define FIFO_ARB "./Pipes/pipeArbitro"
+#define FIFO_CLI "./Pipes/pipe%d"       // PIPE_CLIENTE -->> pipe + pid
+#define BUFF_SIZE 4096
+
+typedef struct {
+    unsigned int pid;
+    char nomeJogador[200];
+    char mensagem[BUFF_SIZE];
+    char resposta[BUFF_SIZE];
+    int cdgErro;    // 0 -> Correu tudo na perfeicao
+    char pipeCliente[200];
+} comunicacao;
+
 
 #endif //CLIENTE_CLIENTE_H
