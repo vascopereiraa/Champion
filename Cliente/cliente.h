@@ -19,9 +19,9 @@
 typedef struct {
     unsigned int pid;
     char nomeJogador[200];
-    char mensagem[BUFF_SIZE];
-    char resposta[BUFF_SIZE];
-    int cdgErro;    // 0 -> Correu tudo na perfeicao
+    char mensagem[BUFF_SIZE];	// Cliente << Arbitro -- Enviado pelo Arbitro
+    char resposta[BUFF_SIZE];	// Cliente >> Arbitro -- Resposta do Cliente 
+    unsigned int cdgErro;    // 0 -> Correu tudo na perfeicao
     char pipeCliente[200];
     int pontuacao;
 } comCliente;

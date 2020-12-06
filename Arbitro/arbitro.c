@@ -103,9 +103,10 @@
 
 int main(int argc, char* argv[]) {
 
-    setbuf(stdout, NULL);
-
+    int fd, fdr, res, n;
+    char cmd[200];
     comCliente coms;
+
 
     // Definicao do Ambiente
     const init setup = initialization(argc, argv);
@@ -113,34 +114,40 @@ int main(int argc, char* argv[]) {
 
     // Criacao do NamedPipe do Arbitro
     fd_set fds;
-    FD_ZERO(&fds);
-    int fd = criaPipeArbitro(&fds);
+    fd = criaPipeArbitro(&fds);
 
-    char cmd[200];
     do {
-        printf("Comando: ");
+        printf("\nComando: ");
         fflush(stdout);
+
+        // Definicao dos descritores abertos
+        FD_ZERO(&fds);
         FD_SET(0, &fds);
-        int res = select(fd + 1, &fds, NULL, NULL, NULL);
+        FD_SET(fd, &fds);
+
+        res = select(fd + 1, &fds, NULL, NULL, NULL);
         if (res > 0 && FD_ISSET(0, &fds))
             scanf("%s", cmd);
         else
             if (res > 0 && FD_ISSET(fd, &fds)) {
-               int n = read(fd, &coms, sizeof(comCliente));
-               printf("RECEBI:\nPID: %d\nNome: %sMensagem: %s\n", coms.pid, coms.nomeJogador, coms.mensagem);
+               n = read(fd, &coms, sizeof(comCliente));
+                printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
+                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao);
 
-               strcpy(coms.resposta, "ok!");
-               sprintf(coms.pipeCliente, FIFO_CLI, coms.pid);
+               strcpy(coms.mensagem, "ok!");
                coms.cdgErro = 0;
-               int fdr = open(coms.pipeCliente, O_WRONLY);
+               fdr = open(coms.pipeCliente, O_WRONLY);
                n = write(fdr, &coms, sizeof(comCliente));
                close(fdr);
                puts(" ");
-               printf("ESCREVI:\nPID: %d\nNome: %s\nMensagem: %s\nResposta: %s\nCodigo_Erro: %d\nPipe_Cliente: %s\n",
-                      coms.pid, coms.nomeJogador, coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente);
+               printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
+                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao);
             }
-    } while(strcmp(cmd, "sair") != 0);
+    } while(strcmp(cmd, "exit") != 0);
 
+    // Avisar os Clientes que o Arbitro encerrou
+    printf("O Arbitro encerrou a sua execucao!\n");
+    /* AVISAR TODOS DO TERMINO DO ARBITRO */
 
     // Fechar o NamedPipe do Arbitro
     close(fd);

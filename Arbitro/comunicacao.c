@@ -21,18 +21,18 @@
 
 int criaPipeArbitro(fd_set* fds) {
 
+    int fd;
+
     // Acede/Cria named pipe do Arbitro
     if(access(FIFO_ARB, F_OK) != 0) {
         mkfifo(FIFO_ARB, 0600);
 
-        int fd = open(FIFO_ARB, O_RDWR);
-        FD_SET(fd, fds);
+        fd = open(FIFO_ARB, O_RDWR);
         return fd;
     }
 
     // Caso nao consiga aceder ao FIFO
     printf("Nao foi possivel aceder ao canal de comunicacao do Arbitro\n");
     exit(1);
-
 }
 

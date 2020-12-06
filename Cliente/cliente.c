@@ -14,41 +14,72 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cliente.h"
 
 int main() {
-    int fd,n,fdr;
-    comunicacao p;
+    int fd, n, fdr, abort = 0;
+    comCliente p;
 
-    if(access(FIFO_ARB , F_OK)!=0){
+    // Verifica se existe o NamedPipe do Arbitro
+    if(access(FIFO_ARB , F_OK) != 0){
         fprintf(stderr , "[ERRO]O servidor nao se encontra em execucao\n");
     }
 
-    p.pid =getpid();
+    // Preenche a struct de comunicacao
+    p.pid = getpid();
     printf("Nome:");
     fflush(stdout);
     scanf("%s",p.nomeJogador);
+    sprintf(p.pipeCliente, FIFO_CLI, p.pid);
+    strcpy(p.mensagem, " ");
+    strcpy(p.resposta, "ok!");
+    p.cdgErro = 0;
+    p.pontuacao = 0;
 
-    sprintf(p.pipeCliente,FIFO_CLI,p.pid);
+    // Criar o NamedPipe do Cliente
     mkfifo(p.pipeCliente,0600);
     fd = open(FIFO_ARB , O_WRONLY);
 
-    do{
-        //preencher a struct
-    n=write(fd,&p,sizeof(comunicacao));
-    printf("Enviei: \n  %d  \n %s \n %s",p.pid,p.nomeJogador,p.pipeCliente);
+    do {
+        // Enviar mensagem ao Arbitro
+		n = write(fd, &p, sizeof(comCliente));
+		printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
+                p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao);
 
-    fdr = open(p.pipeCliente,O_RDONLY);
-    n= read(fdr,&p,sizeof(comunicacao));
-    close(fdr);
+		// Ler a resposta do Arbitro
+		fdr = open(p.pipeCliente, O_RDONLY);
+		n = read(fdr, &p, sizeof(comCliente));
+		close(fdr);
 
-    printf("Recebi: \n  %d  \n %s \n %s",p.pid,p.nomeJogador,p.pipeCliente);
+		/*
+		 * if(p.cdgErro != 0)
+		 *     ANALISA ERRO E RESOLVE
+		 *
+		 */
 
-    }while(1);
+		printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
+               p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao);
 
+        printf("\nResposta: ");
+        fflush(stdout);
+        scanf("%s", p.resposta);
+
+        if(strcmp(p.resposta, "#quit") == 0)
+            abort = 1;
+
+    } while(!abort);
+
+    // Avisar o servidor que o jogador desistiu
+    strcpy(p.resposta, "O jogador desistiu\n");
+    n = write(fd, &p, sizeof(comCliente));
+
+    // Fechar o pipe do Arbitro
     close(fd);
+
+    // Fechar o pipe do Cliente
     unlink(p.pipeCliente);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
