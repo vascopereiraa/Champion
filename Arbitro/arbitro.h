@@ -13,15 +13,17 @@
 #define ARBITRO_ARBITRO_H
 
 typedef struct {
-    char nome[200];
-    char jogo[200];
+    // Dados Cliente
+    char nomeJogador[200];
+    char pipeCliente[200];
+    unsigned int pidCliente;
+
+    // Dados Jogo
+    char nomeJogo[200];
+    unsigned int pidJogo;
     int pontuacao;
-} jogadores;
+} info;
 
-typedef struct {
-    int pid_jogo;
-} msg_jogo;
-
-
+int verificaCliente(info* jogadores, const int* tamJogadores, const comCliente* coms);
 
 #endif //ARBITRO_ARBITRO_H

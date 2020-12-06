@@ -21,6 +21,7 @@
 #include "initConfig.h"
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
+#include "arbitro.h"
 
 /* void criaJogo(const init* setup) {
 
@@ -106,7 +107,8 @@ int main(int argc, char* argv[]) {
     int fd, fdr, res, n;
     char cmd[200];
     comCliente coms;
-
+    info* jogadores = NULL;
+    int tamJogadores = 0;
 
     // Definicao do Ambiente
     const init setup = initialization(argc, argv);
@@ -126,13 +128,18 @@ int main(int argc, char* argv[]) {
         FD_SET(fd, &fds);
 
         res = select(fd + 1, &fds, NULL, NULL, NULL);
-        if (res > 0 && FD_ISSET(0, &fds))
+        if (res > 0 && FD_ISSET(0, &fds)) {
             scanf("%s", cmd);
+
+        }
         else
             if (res > 0 && FD_ISSET(fd, &fds)) {
                n = read(fd, &coms, sizeof(comCliente));
-                printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
-                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao);
+               /* printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
+                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
+
+               if(verificaCliente(jogadores, &tamJogadores, &coms) == 0)
+                   /* ADICIONAR CLIENTE A LISTA DE JOGADORES */
 
                strcpy(coms.mensagem, "ok!");
                coms.cdgErro = 0;
