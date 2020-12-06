@@ -16,14 +16,14 @@
 #include "../Cliente/cliente.h"
 #include "arbitro.h"
 
-int verificaCliente(info* jogadores, const int* tamJogadores, comCliente* coms) {
+int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
 
     // Se a lista de jogadores tiver vazia
     if(jogadores == NULL)
         return 0;
 
     // Verifica se o jogador existe na lista
-    for (int i = 0; i < *tamJogadores; ++i) {
+    for (int i = 0; i < *nJogadores; ++i) {
         if(jogadores[i].pidCliente == coms->pid)
             return 1;
     }
@@ -32,12 +32,12 @@ int verificaCliente(info* jogadores, const int* tamJogadores, comCliente* coms) 
     return 0;
 }
 
-info* adicionaCliente(info* jogadores, int* tamJogadores, comCliente* coms) {
+info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms) {
 
-    info* array;
+    info* array = NULL;
 
     // Realocar espaco para um novo jogador
-    array = realloc(jogadores, sizeof(info) * ((*tamJogadores) + 1));
+    array = realloc(jogadores, sizeof(info) * ((*nJogadores) + 1));
     if(array == NULL) {
         fprintf(stderr, "[ERRO] Erro ao adicionar novo cliente!\n");
         coms->cdgErro = 1;
@@ -46,7 +46,7 @@ info* adicionaCliente(info* jogadores, int* tamJogadores, comCliente* coms) {
 
     // Preencher os dados do jogador
     jogadores = array;
-    jogadores[(*tamJogadores)++] = preencheDadosCliente(coms);
+    jogadores[(*nJogadores)++] = preencheDadosCliente(coms);
 
     return jogadores;
 }
@@ -62,9 +62,14 @@ info preencheDadosCliente(comCliente* coms) {
     return novo;
 }
 
-void listaJogadores(const info* jogadores, const int* tamJogadores) {
+void listaJogadores(const info* jogadores, const int* nJogadores) {
 
-    for(int i = 0; i < (*tamJogadores); ++i) {
+    if((*nJogadores) == 0) {
+        printf("[AVISO] Ainda nenhum jogador entrou no campeonato!\n");
+        return ;
+    }
+
+    for(int i = 0; i < (*nJogadores); ++i) {
         printf("Jogador %d:\nNome: %s\nJogo: %s\n\n", i+1, jogadores[i].nomeJogador, jogadores[i].nomeJogo);
     }
 

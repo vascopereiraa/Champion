@@ -12,6 +12,8 @@
 #ifndef ARBITRO_ARBITRO_H
 #define ARBITRO_ARBITRO_H
 
+#include "initConfig.h"
+
 typedef struct {
     // Dados Cliente
     char nomeJogador[200];
@@ -24,9 +26,18 @@ typedef struct {
     int pontuacao;
 } info;
 
-int verificaCliente(info* jogadores, const int* tamJogadores, comCliente* coms);
-info* adicionaCliente(info* jogadores, int* tamJogadores, comCliente* coms);
+// Lista de Jogadores em execucao
+int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms);
+info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms);
 info preencheDadosCliente(comCliente* coms);
-void listaJogadores(const info* jogadores, const int* tamJogadores);
+void listaJogadores(const info* jogadores, const int* nJogadores);
+
+// Lista jogos disponiveis
+char** obtemJogos(char** jogos, int* nJogos, const init* setup);
+void listaJogos(const char** jogos, const int* nJogos);
+
+// Comandos do Administrador
+void gestorComandos(char* comando, const info* jogadores, const int* nJogadores, const char** jogos,
+                    const int* nJogos);
 
 #endif //ARBITRO_ARBITRO_H
