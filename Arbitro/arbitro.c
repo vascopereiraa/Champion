@@ -24,70 +24,6 @@
 #include "comunicacao.h"
 #include "arbitro.h"
 
-/* void criaJogo(const init* setup) {
-
-    int i = 0, res, pid, canalLeitura[2], canalEscrita[2], estado;
-    char listaJogos[10][100];
-
-    for(int k = 0; k < i; k++)
-        printf("%s\n", listaJogos[k]);
-    printf("\n");
-
-    // todo: separar em diversas funcoes
-
-    // Criar o pipe anonimo de comunicaocao com o filho
-    pipe(canalLeitura);
-    pipe(canalEscrita);
-    
-    // Criar o filho
-    res = fork();
-    if(res == 0) {
-        pid = getpid();
-        printf("[%4d] Sou o filho\n", pid);
-        
-        // Atribuir saida e entrada de dados para o pipe
-        close(canalLeitura[0]);
-        close(1);
-        dup(canalLeitura[1]);
-        close(canalLeitura[1]);
-        
-        close(canalEscrita[1]);
-        close(0);
-        dup(canalEscrita[0]);
-        close(canalEscrita[0]);
-
-        // Mudar diretoria corrente
-        // todo: acrescentar verificacao da diretoria
-        chdir(setup->GAMEDIR);
-        execl(listaJogos[0], listaJogos[0], NULL);
-
-        fprintf(stderr, "[%4d] FILHO: Erro a executar o jogo\n", pid);
-        exit(10);
-    }
-    close(canalLeitura[1]);
-    close(canalEscrita[0]);
-
-    int n = 1;
-    while(n) {
-        char string[BUFF_SIZE];
-
-        n = read(canalLeitura[0], string, sizeof(string) - 1);
-        if(n <= 0)
-            break;
-        string[n] = '\0';
-        printf("%s", string);
-
-        n = scanf("%s", string);
-        string[n] = '\0';
-        write(canalEscrita[1], string, sizeof(string));
-    }
-
-    // Troca de dados com o cliente
-    wait(&estado);
-    if(WIFEXITED(estado))
-        printf("%d\n\n", WEXITSTATUS(estado));
-} */
-
 char** obtemJogos(char** jogos, int* nJogos, const init* setup) {
 
     DIR* dir;
@@ -160,6 +96,13 @@ void gestorComandos(char* comando, const info* jogadores, const int* nJogadores,
     puts("\n[AVISO] O comando pretendido nao se encontra definido\n");
 }
 
+void libertarJogos(char** jogos, int* nJogos) {
+
+    for(int i = 0; i < (*nJogos); ++i)
+        free(jogos[i]);
+
+}
+
 int main(int argc, char* argv[]) {
 
     int fd, fdr, res, n;
@@ -225,7 +168,7 @@ int main(int argc, char* argv[]) {
     // Apaga dados em memoria dinamica
     free(setup.GAMEDIR);
     free(jogadores);
-    /* Libertar memoria do array dinamico de jogos */
+    libertarJogos(jogos, &nJogos);
 
     exit(EXIT_SUCCESS);
 }

@@ -32,9 +32,10 @@ info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms);
 info preencheDadosCliente(comCliente* coms);
 void listaJogadores(const info* jogadores, const int* nJogadores);
 
-// Lista jogos disponiveis
+// Lista de Jogos
 char** obtemJogos(char** jogos, int* nJogos, const init* setup);
 void listaJogos(const char** jogos, const int* nJogos);
+void libertarJogos(char** jogos, int* nJogos);
 
 // Comandos do Administrador
 void gestorComandos(char* comando, const info* jogadores, const int* nJogadores, const char** jogos,

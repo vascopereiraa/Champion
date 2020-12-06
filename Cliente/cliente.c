@@ -24,7 +24,8 @@ int main() {
 
     // Verifica se existe o NamedPipe do Arbitro
     if(access(FIFO_ARB , F_OK) != 0){
-        fprintf(stderr , "[ERRO]O servidor nao se encontra em execucao\n");
+        fprintf(stderr , "[ERRO] O Arbitro nao se encontra em execucao\n");
+        exit(1);
     }
 
     // Preenche a struct de comunicacao
