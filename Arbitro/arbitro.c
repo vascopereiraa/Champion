@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
         res = select(fd + 1, &fds, NULL, NULL, NULL);
         if (res > 0 && FD_ISSET(0, &fds)) {
             scanf("%s", cmd);
-
+            listaJogadores(jogadores, &tamJogadores);
         }
         else
             if (res > 0 && FD_ISSET(fd, &fds)) {
@@ -138,8 +138,8 @@ int main(int argc, char* argv[]) {
                /* printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
                        coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
 
-               if(verificaCliente(jogadores, &tamJogadores, &coms) == 0)
-                   /* ADICIONAR CLIENTE A LISTA DE JOGADORES */
+               if(verificaCliente(jogadores, &tamJogadores, &coms) == 0 && tamJogadores < setup.MAXPLAYERS)
+                   jogadores = adicionaCliente(jogadores, &tamJogadores, &coms);
 
                strcpy(coms.mensagem, "ok!");
                coms.cdgErro = 0;
@@ -160,6 +160,9 @@ int main(int argc, char* argv[]) {
     close(fd);
     unlink(FIFO_ARB);
 
+    // Apaga dados em memoria dinamica
     free(setup.GAMEDIR);
+    free(jogadores);
+
     exit(EXIT_SUCCESS);
 }

@@ -13,6 +13,7 @@ Arbitro/cmake-build-debug/**
 Arbitro/arbitro.o
 Arbitro/initConfig.o
 Arbitro/comunicacao.o
+Arbitro/jogadores.o
 
 Games/Perguntas/cmake-build-debug
 Games/Perguntas/.idea

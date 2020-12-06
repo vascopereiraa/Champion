@@ -24,6 +24,9 @@ typedef struct {
     int pontuacao;
 } info;
 
-int verificaCliente(info* jogadores, const int* tamJogadores, const comCliente* coms);
+int verificaCliente(info* jogadores, const int* tamJogadores, comCliente* coms);
+info* adicionaCliente(info* jogadores, int* tamJogadores, comCliente* coms);
+info preencheDadosCliente(comCliente* coms);
+void listaJogadores(const info* jogadores, const int* tamJogadores);
 
 #endif //ARBITRO_ARBITRO_H
