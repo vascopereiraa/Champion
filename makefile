@@ -1,11 +1,6 @@
 all: jogo.o arbitro.o cliente.o
-<<<<<<< HEAD
 	gcc ./Games/perguntas.o ./Games/sinais.o -o ./Games/g_perguntas
-	gcc ./Arbitro/arbitro.o -o arbitro
-=======
-	gcc ./Games/perguntas.o -o ./Games/g_perguntas
 	gcc ./Arbitro/arbitro.o ./Arbitro/initConfig.o ./Arbitro/comunicacao.o  -o arbitro
->>>>>>> origin/Arbitro&Cliente
 	gcc ./Cliente/cliente.o -o cliente
 
 jogo.o: ./Games/Perguntas/perguntas.c ./Games/Perguntas/perguntas.h ./Games/Perguntas/sinais.h ./Games/Perguntas/sinais.c
