@@ -23,7 +23,8 @@ typedef struct {
     char resposta[BUFF_SIZE];
     int cdgErro;    // 0 -> Correu tudo na perfeicao
     char pipeCliente[200];
-} comunicacao;
+    int pontuacao;
+} comCliente;
 
 
 #endif //CLIENTE_CLIENTE_H

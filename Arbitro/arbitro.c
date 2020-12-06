@@ -19,6 +19,7 @@
 #include <fcntl.h>
 
 #include "initConfig.h"
+#include "../Cliente/cliente.h"
 #include "comunicacao.h"
 
 /* void criaJogo(const init* setup) {
@@ -104,14 +105,14 @@ int main(int argc, char* argv[]) {
 
     setbuf(stdout, NULL);
 
-    comunicacao coms;
+    comCliente coms;
 
     // Definicao do Ambiente
     const init setup = initialization(argc, argv);
     printInit(setup);
 
     // Criacao do NamedPipe do Arbitro
-    fd_set  fds;
+    fd_set fds;
     FD_ZERO(&fds);
     int fd = criaPipeArbitro(&fds);
 
@@ -125,14 +126,14 @@ int main(int argc, char* argv[]) {
             scanf("%s", cmd);
         else
             if (res > 0 && FD_ISSET(fd, &fds)) {
-               int n = read(fd, &coms, sizeof(comunicacao));
+               int n = read(fd, &coms, sizeof(comCliente));
                printf("RECEBI:\nPID: %d\nNome: %sMensagem: %s\n", coms.pid, coms.nomeJogador, coms.mensagem);
 
                strcpy(coms.resposta, "ok!");
                sprintf(coms.pipeCliente, FIFO_CLI, coms.pid);
                coms.cdgErro = 0;
                int fdr = open(coms.pipeCliente, O_WRONLY);
-               n = write(fdr, &coms, sizeof(comunicacao));
+               n = write(fdr, &coms, sizeof(comCliente));
                close(fdr);
                puts(" ");
                printf("ESCREVI:\nPID: %d\nNome: %s\nMensagem: %s\nResposta: %s\nCodigo_Erro: %d\nPipe_Cliente: %s\n",

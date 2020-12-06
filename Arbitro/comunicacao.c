@@ -16,6 +16,7 @@
 #include <sys/select.h>
 #include <fcntl.h>
 
+#include "../Cliente/cliente.h"
 #include "comunicacao.h"
 
 int criaPipeArbitro(fd_set* fds) {
