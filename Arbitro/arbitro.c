@@ -80,7 +80,7 @@ void listaJogos(const char** jogos, const int* nJogos) {
     }
 }
 
-void gestorComandos(char* comando, const info* jogadores, const int* nJogadores, const char** jogos,
+void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos) {
 
     if(strcmp(comando, "players") == 0) {
@@ -93,7 +93,27 @@ void gestorComandos(char* comando, const info* jogadores, const int* nJogadores,
         return;
     }
 
-    puts("\n[AVISO] O comando pretendido nao se encontra definido\n");
+    if(comando[0] == 'k') {
+        int posicao, tam = strlen(comando);
+        char *jogadorRemover = malloc(sizeof(char) * (strlen(comando) -1 ));
+        if(jogadorRemover != NULL) {
+            for (int j = 1; j < tam; ++j)
+                jogadorRemover[j-1] = (char) tolower(comando[j]);
+
+            jogadorRemover[tam-1] = '\0';
+            posicao = existeJogador(jogadores, nJogadores, jogadorRemover);
+            if (posicao == -1) {
+                printf("[ERRO] O jogador %s nao se encontra no campeonato\n", jogadorRemover);
+                return ;
+            }
+
+            printf("\nPosicao: %d\n", posicao);
+            removeJogador((info **) &jogadores, nJogadores, &posicao);
+            return;
+        }
+    }
+
+    puts("[AVISO] O comando pretendido nao se encontra definido\n");
 }
 
 void libertarJogos(char** jogos, int* nJogos) {

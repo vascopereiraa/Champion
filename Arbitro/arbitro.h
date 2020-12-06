@@ -31,6 +31,8 @@ int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms);
 info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms);
 info preencheDadosCliente(comCliente* coms);
 void listaJogadores(const info* jogadores, const int* nJogadores);
+int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover);
+void removeJogador(info** jogadores, int* nJogadores, int* posicao);
 
 // Lista de Jogos
 char** obtemJogos(char** jogos, int* nJogos, const init* setup);
@@ -38,7 +40,7 @@ void listaJogos(const char** jogos, const int* nJogos);
 void libertarJogos(char** jogos, int* nJogos);
 
 // Comandos do Administrador
-void gestorComandos(char* comando, const info* jogadores, const int* nJogadores, const char** jogos,
+void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos);
 
 #endif //ARBITRO_ARBITRO_H

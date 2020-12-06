@@ -74,3 +74,43 @@ void listaJogadores(const info* jogadores, const int* nJogadores) {
     }
 
 }
+
+int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover) {
+
+    for(int i = 0; i < (*nJogadores); ++i)
+        if(strcmp(jogadores->nomeJogador, jogadorRemover) == 0)
+            return i;
+
+        return -1;
+
+}
+
+void removeJogador(info** jogadores, int* nJogadores, int* posicao) {
+
+    info* aux = NULL;
+    info remove;
+
+    // Caso so exista 1 jogador
+    if((*nJogadores) == 1 && (*posicao) == 0) {
+        free(jogadores[0]);
+        --(*nJogadores);
+        printf("[RES] Jogador removido com sucesso!(nJogadores = %d)\n", *nJogadores);
+    }
+    else {
+        remove = *jogadores[(*posicao)];
+        *jogadores[(*posicao)] = *jogadores[(*nJogadores)];
+        aux = (info*) realloc((*jogadores), sizeof(info) * ((*nJogadores) - 1));
+        if(aux != NULL) {
+            **jogadores = *aux;
+            --(*nJogadores);
+            printf("[RES] Jogador removido com sucesso!\n");
+            listaJogadores((const info*) &jogadores, nJogadores);
+            return ;
+        }
+
+        *jogadores[(*posicao)] = remove;
+        printf("[RES] Impossivel remover o jogador pretendido!\n");
+        return ;
+
+    }
+}
