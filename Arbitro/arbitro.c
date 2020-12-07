@@ -94,21 +94,24 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
     }
 
     if(comando[0] == 'k') {
-        int posicao, tam = strlen(comando);
-        char *jogadorRemover = malloc(sizeof(char) * (strlen(comando) -1 ));
+        int posicao, tam = (int) strlen(comando);
+        char *jogadorRemover = (char*) malloc(sizeof(char) * (tam - 1));
         if(jogadorRemover != NULL) {
             for (int j = 1; j < tam; ++j)
                 jogadorRemover[j-1] = (char) tolower(comando[j]);
 
             jogadorRemover[tam-1] = '\0';
+            // printf("Nome a remover: %s\n", jogadorRemover);
             posicao = existeJogador(jogadores, nJogadores, jogadorRemover);
             if (posicao == -1) {
                 printf("[ERRO] O jogador %s nao se encontra no campeonato\n", jogadorRemover);
+                // free(jogadorRemover);
                 return ;
             }
 
-            printf("\nPosicao: %d\n", posicao);
+            // printf("\nPosicao: %d\n", posicao);
             removeJogador((info **) &jogadores, nJogadores, &posicao);
+            free(jogadorRemover);
             return;
         }
     }
@@ -187,7 +190,7 @@ int main(int argc, char* argv[]) {
 
     // Apaga dados em memoria dinamica
     free(setup.GAMEDIR);
-    free(jogadores);
+    jogadores = libertaJogadores(jogadores, &nJogadores);
     libertarJogos(jogos, &nJogos);
 
     exit(EXIT_SUCCESS);

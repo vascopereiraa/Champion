@@ -33,6 +33,7 @@ info preencheDadosCliente(comCliente* coms);
 void listaJogadores(const info* jogadores, const int* nJogadores);
 int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover);
 void removeJogador(info** jogadores, int* nJogadores, int* posicao);
+info* libertaJogadores(info* jogadores, int* nJogadores);
 
 // Lista de Jogos
 char** obtemJogos(char** jogos, int* nJogos, const init* setup);
