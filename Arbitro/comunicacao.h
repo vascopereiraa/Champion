@@ -12,6 +12,11 @@
 #ifndef ARBITRO_COMUNICACAO_H
 #define ARBITRO_COMUNICACAO_H
 
+// Sinais
+void signalTerminaExecucao(const unsigned int* pid, int valor);
+
+// Named Pipes
 int criaPipeArbitro(fd_set* fds);
 void verificaLocalPipes();
+
 #endif //ARBITRO_COMUNICACAO_H

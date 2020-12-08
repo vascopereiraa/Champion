@@ -84,11 +84,12 @@ int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover) 
     return -1;
 }
 
-void removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
+int removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
 
     if((*nJogadores) == 1) {
         free((*jogadores));
         (*nJogadores) = 0;
+        return 1;
     }
     else {
         info* original = *jogadores;
@@ -101,11 +102,11 @@ void removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
             original = aux;
             --(*nJogadores);
             *jogadores = original;
-            return;
+            return 1;
         }
         else {
             *jogadores[(*posicao)] = t;
-            return;
+            return 0;
         }
     }
 

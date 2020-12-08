@@ -15,12 +15,38 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 #include "cliente.h"
 
+// Dados do Jogador
+comCliente p;
+
+void trataSIGUSR1(int s, siginfo_t* info, void* context) {
+    int valor = info->si_value.sival_int;
+    switch (valor) {
+        case 1:
+            printf("[AVISO] O jogador %s desisitiu!\n", p.nomeJogador);
+            break;
+
+        case 2:
+            printf("\n[AVISO] O jogador %s foi removido do campeonato pelo administrador!\n",
+                        p.nomeJogador);
+            exit(0);
+            break;
+        default:
+            ;
+    }
+}
+
 int main() {
     int fd, n, fdr, abort = 0;
-    comCliente p;
+
+    // Tratamento do sinal SIGUSR1
+    struct sigaction act;
+    act.sa_sigaction = trataSIGUSR1;
+    act.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR1, &act, NULL);
 
     // Verifica se existe o NamedPipe do Arbitro
     if(access(FIFO_ARB , F_OK) != 0){

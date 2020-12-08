@@ -16,9 +16,18 @@
 #include <fcntl.h>
 #include <sys/select.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
+
+void signalTerminaExecucao(const unsigned int* pid, int valor) {
+
+    union sigval value;
+    value.sival_int = valor;
+    sigqueue((*pid), SIGUSR1, value);
+
+}
 
 int criaPipeArbitro(fd_set* fds) {
 

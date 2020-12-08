@@ -109,8 +109,12 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
                 return ;
             }
 
-            // printf("\nPosicao: %d\n", posicao);
-            removeJogador((info **) &jogadores, nJogadores, &posicao);
+
+            unsigned int cliPid = jogadores[posicao].pidCliente;
+            if(removeJogador((info **) &jogadores, nJogadores, &posicao) == 1) {
+                /* TERMINAR O CLIENTE E JOGO */
+                signalTerminaExecucao(&cliPid, 2);
+            }
             free(jogadorRemover);
             return;
         }
@@ -123,6 +127,7 @@ void libertarJogos(char** jogos, int* nJogos) {
 
     for(int i = 0; i < (*nJogos); ++i)
         free(jogos[i]);
+    (*nJogos) = 0;
 
 }
 

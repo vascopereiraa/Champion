@@ -16,6 +16,8 @@
 #define FIFO_CLI "./Pipes/pipe%d"       // PIPE_CLIENTE -->> pipe + pid
 #define BUFF_SIZE 4096
 
+#include <signal.h>
+
 typedef struct {
     unsigned int pid;
     char nomeJogador[200];
@@ -26,5 +28,7 @@ typedef struct {
     int pontuacao;
 } comCliente;
 
+// Tratamento de Sinais
+void trataSIGUSR1(int s, siginfo_t* info, void* context);
 
 #endif //CLIENTE_CLIENTE_H
