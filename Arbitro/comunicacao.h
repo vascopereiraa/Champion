@@ -13,5 +13,5 @@
 #define ARBITRO_COMUNICACAO_H
 
 int criaPipeArbitro(fd_set* fds);
-
+void verificaLocalPipes();
 #endif //ARBITRO_COMUNICACAO_H

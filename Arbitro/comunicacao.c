@@ -13,8 +13,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/select.h>
 #include <fcntl.h>
+#include <sys/select.h>
+#include <errno.h>
 
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
@@ -33,6 +34,20 @@ int criaPipeArbitro(fd_set* fds) {
 
     // Caso nao consiga aceder ao FIFO
     printf("Nao foi possivel aceder ao canal de comunicacao do Arbitro\n");
-    exit(1);
+    exit(3);
+}
+
+void verificaLocalPipes() {
+
+    if(mkdir("./Pipes", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0) {
+        return ;
+    }
+    else
+        if(errno == EEXIST)
+            return ;
+
+    fprintf(stderr, "[ERRO] A pasta de armazenamento de named pipes encontra-se indisponivel!\n");
+    exit(2);
+
 }
 

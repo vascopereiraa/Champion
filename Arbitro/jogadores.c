@@ -84,43 +84,42 @@ int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover) 
     return -1;
 }
 
-void removeJogador(info** jogadores, int* nJogadores, int* posicao) {
+void removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
 
-    info* aux = NULL;
-    info remove;
-
-    // Caso so exista 1 jogador
-    if((*nJogadores) == 1 && (*posicao) == 0) {
-        free(jogadores[0]);
-        --(*nJogadores);
-        printf("[RES] Jogador removido com sucesso!(nJogadores = %d)\n", *nJogadores);
+    if((*nJogadores) == 1) {
+        free((*jogadores));
+        (*nJogadores) = 0;
     }
     else {
-        remove = *jogadores[(*posicao)];
-        *jogadores[(*posicao)] = *jogadores[(*nJogadores) - 1];
-        aux = (info*) realloc((*jogadores), sizeof(info) * ((*nJogadores) - 1));
+        info* original = *jogadores;
+        info t = original[(*posicao)];
+        info* aux = NULL;
+        original[(*posicao)] = original[(*nJogadores) - 1];
+        aux = (info*) realloc(original, sizeof(info) * ((*nJogadores) - 1));
         if(aux != NULL) {
-            *jogadores = aux;
+            printf("ESTOU AQUI!");
+            original = aux;
             --(*nJogadores);
-            printf("[RES] Jogador removido com sucesso!\n");
-            return ;
+            *jogadores = original;
+            return;
         }
-
-        *jogadores[(*nJogadores)] = remove;
-        printf("[RES] Impossivel remover o jogador pretendido!\n");
-        return ;
-
+        else {
+            *jogadores[(*posicao)] = t;
+            return;
+        }
     }
+
 }
 
-info* libertaJogadores(info* jogadores, int* nJogadores) {
+void libertaJogadores(info* jogadores, int* nJogadores) {
 
     if((*nJogadores) == 0)
-        return jogadores;
+        return ;
     else {
         free(jogadores);
         jogadores = NULL;
-        return jogadores;
+        (*nJogadores) = 0;
+        return ;
     }
 
 }

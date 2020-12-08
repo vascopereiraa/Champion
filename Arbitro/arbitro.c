@@ -143,6 +143,7 @@ int main(int argc, char* argv[]) {
     jogos = obtemJogos(jogos, &nJogos, &setup);
 
     // Criacao do NamedPipe do Arbitro
+    verificaLocalPipes();
     fd_set fds;
     fd = criaPipeArbitro(&fds);
 
@@ -182,7 +183,7 @@ int main(int argc, char* argv[]) {
 
     // Avisar os Clientes que o Arbitro encerrou
     printf("O Arbitro encerrou a sua execucao!\n");
-    /* AVISAR TODOS DO TERMINO DO ARBITRO */
+    /* AVISAR TODOS DO TERMINO DO ARBITRO -->> Enviar sinal aos clientes e jogos */
 
     // Fechar o NamedPipe do Arbitro
     close(fd);
@@ -190,7 +191,7 @@ int main(int argc, char* argv[]) {
 
     // Apaga dados em memoria dinamica
     free(setup.GAMEDIR);
-    jogadores = libertaJogadores(jogadores, &nJogadores);
+    libertaJogadores(jogadores, &nJogadores);
     libertarJogos(jogos, &nJogos);
 
     exit(EXIT_SUCCESS);
