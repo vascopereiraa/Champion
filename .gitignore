@@ -11,6 +11,9 @@ Arbitro/.idea/**
 Arbitro/CMakeLists.txt
 Arbitro/cmake-build-debug/**
 Arbitro/arbitro.o
+Arbitro/initConfig.o
+Arbitro/comunicacao.o
+Arbitro/jogadores.o
 
 Games/Perguntas/cmake-build-debug
 Games/Perguntas/.idea
@@ -18,8 +21,8 @@ Games/Perguntas/.idea/**
 Games/Perguntas/CMakeLists.txt
 Games/Perguntas/cmake-build-debug/**
 Games/perguntas.o
+Games/sinais.o
 
 Games/g_perguntas
 arbitro
 cliente
-
