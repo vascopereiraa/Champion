@@ -57,7 +57,6 @@ info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms) {
     array = realloc(jogadores, sizeof(info) * ((*nJogadores) + 1));
     if(array == NULL) {
         fprintf(stderr, "[ERRO] Erro ao adicionar novo cliente!\n");
-        coms->cdgErro = 1;
         return jogadores;
     }
 

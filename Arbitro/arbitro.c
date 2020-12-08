@@ -80,6 +80,23 @@ void listaJogos(const char** jogos, const int* nJogos) {
     }
 }
 
+void libertarJogos(char** jogos, int* nJogos) {
+
+    for(int i = 0; i < (*nJogos); ++i)
+        free(jogos[i]);
+    (*nJogos) = 0;
+
+}
+
+void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores) {
+
+    for(int i = 0; i < (*nJogadores); ++i)
+        if(jogadores[i].pidCliente == coms->pid) {
+            strcpy(coms->mensagem, jogadores[i].nomeJogo);
+            coms->cdgErro = 2;
+        }
+}
+
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos) {
 
@@ -122,14 +139,32 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
         }
     }
 
+    if(strcmp(comando, "clear") == 0) {
+        system("clear");
+        return ;
+    }
+
     puts("[AVISO] O comando pretendido nao se encontra definido\n");
 }
 
-void libertarJogos(char** jogos, int* nJogos) {
+void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
 
-    for(int i = 0; i < (*nJogos); ++i)
-        free(jogos[i]);
-    (*nJogos) = 0;
+    if(strcmp(coms->resposta, "#mygame") == 0) {
+        obtemJogoCliente(coms, jogadores, nJogadores);
+        return ;
+    }
+
+    if(strcmp(coms->resposta, "#quit") == 0) {
+        char nomeJogador[200];
+        int posicao = existeJogador(jogadores, nJogadores, coms->nomeJogador);
+        // unsigned int pidJogo = jogadores[posicao].pidJogo;
+        strcpy(nomeJogador, jogadores[posicao].nomeJogador);
+        if(removeJogador((info**) &jogadores, nJogadores, &posicao) == 1) {
+            printf("[AVISO] O jogador %s desistiu do campeonato\n", nomeJogador);
+            // Enviar sinal ao jogo para terminar
+        }
+    }
+
 
 }
 
@@ -170,12 +205,11 @@ int main(int argc, char* argv[]) {
         }
         else
             if (res > 0 && FD_ISSET(fd, &fds)) {
-               n = read(fd, &coms, sizeof(comCliente));
-               /* printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
-                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
+                // Ler informacao passada pelo Pipe
+                n = read(fd, &coms, sizeof(comCliente));
 
-               // Verifica se o cliente já está registado no arbitro (Nomes iguais)
-               if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
+                // Verifica se o cliente já está registado no arbitro (Nomes iguais)
+                if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
                    // Verifica se excede o numero maximo de jogadores
                    if (nJogadores < setup.MAXPLAYERS)
                        jogadores = adicionaCliente(jogadores, &nJogadores, &coms);
@@ -183,24 +217,34 @@ int main(int argc, char* argv[]) {
                        unsigned int pidCli = coms.pid;
                        signalTerminaExecucao(&pidCli, 3);
                    }
-               }
-               // Caso o nome do Cliente seja igual a um nome ja registado
-               else {
+                }
+
+                // Caso o nome do Cliente seja igual a um nome ja registado
+                else {
                    // PID do Cliente ainda nao existe na lista
                    if(verificaPidCliente(jogadores, &nJogadores, &coms) == 0)
                        coms.cdgErro = 1;
                    // Caso o PID do Cliente já exista na lista de jogadores
                    else
                        coms.cdgErro = 0;
-               }
+                }
 
-               strcpy(coms.mensagem, "ok!");
-               fdr = open(coms.pipeCliente, O_WRONLY);
-               n = write(fdr, &coms, sizeof(comCliente));
-               close(fdr);
-               puts(" ");
-               /* printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
-                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
+                // Tratamento da resposta do Cliente
+                if(coms.resposta[0] == '#') {
+                    // Mensagem destinada ao Arbitro
+                    trataComandosCliente(&coms, jogadores, &nJogadores);
+                }
+                else {
+                    // Mensagem destinada ao Jogo
+                    printf("\n%s", coms.resposta);
+                }
+
+                // Enviar informacao ao Cliente pelo respetivo Named Pipe
+                fdr = open(coms.pipeCliente, O_WRONLY);
+                n = write(fdr, &coms, sizeof(comCliente));
+                close(fdr);
+                puts(" ");
+
             }
     } while(strcmp(cmd, "exit") != 0);
 
@@ -220,3 +264,6 @@ int main(int argc, char* argv[]) {
 
     exit(EXIT_SUCCESS);
 }
+
+/* printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
+                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */

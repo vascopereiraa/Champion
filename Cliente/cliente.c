@@ -64,6 +64,13 @@ void trataCodigoErro() {
             char novoNome[200];
             scanf("%s", novoNome);
             strcpy(p.nomeJogador, novoNome);
+            formataNome();
+            p.cdgErro = 0;
+            break;
+
+        case 2:
+            printf("\nO seu jogo é \"%s\"\n", p.mensagem);
+            strcpy(p.mensagem, " ");
             p.cdgErro = 0;
             break;
 
@@ -105,7 +112,7 @@ int main() {
     printf("%s", p.nomeJogador);
     sprintf(p.pipeCliente, FIFO_CLI, p.pid);
     strcpy(p.mensagem, " ");
-    strcpy(p.resposta, "ok!");
+    strcpy(p.resposta, " ");
     p.cdgErro = 0;
     p.pontuacao = 0;
 
@@ -116,29 +123,27 @@ int main() {
     do {
         // Enviar mensagem ao Arbitro
 		n = write(fd, &p, sizeof(comCliente));
-		/* printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
-                p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao); */
 
 		// Ler a resposta do Arbitro
 		fdr = open(p.pipeCliente, O_RDONLY);
 		n = read(fdr, &p, sizeof(comCliente));
 		close(fdr);
 
-        printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
-               p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao);
+		// Trata de Erros na Comunicacao
+        if (p.cdgErro == 0) {
+            // Imprime informacao passada pelo Arbitro
+            printf("\n%s", p.mensagem);
+        }
+        else {
+            trataCodigoErro();
+        }
 
-		if(p.cdgErro != 0) {
-		    trataCodigoErro();
-		}
-
-		printf("%s", p.nomeJogador);
-
-
+        // Pede resposta para enviar ao Arbitro
         printf("\nResposta: ");
         fflush(stdout);
         scanf("%s", p.resposta);
 
-
+        // Termina a execucao do Cliente
         if(strcmp(p.resposta, "#quit") == 0)
             abort = 1;
 
@@ -155,3 +160,7 @@ int main() {
 
     exit(EXIT_SUCCESS);
 }
+
+
+/* printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
+               p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao); */

@@ -40,9 +40,11 @@ void libertaJogadores(info* jogadores, int* nJogadores);
 char** obtemJogos(char** jogos, int* nJogos, const init* setup);
 void listaJogos(const char** jogos, const int* nJogos);
 void libertarJogos(char** jogos, int* nJogos);
+void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores);
 
 // Comandos do Administrador
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos);
+void trataComandosCliente(comCliente* comando, info* jogadores, int* nJogadores);
 
 #endif //ARBITRO_ARBITRO_H
