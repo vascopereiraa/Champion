@@ -13,7 +13,7 @@
 #define ARBITRO_INITCONFIG_H
 
 // SETUP CONSTANTS
-#define PLAYER_LIMIT 10
+#define PLAYER_LIMIT 5
 #define GAMES "."
 #define TIME 10
 #define WAITING_TIME 2

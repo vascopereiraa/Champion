@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include "cliente.h"
 
@@ -25,8 +26,13 @@ comCliente p;
 void trataSIGUSR1(int s, siginfo_t* info, void* context) {
     int valor = info->si_value.sival_int;
     switch (valor) {
+        case 0:
+            printf("\n[AVISO] O Arbitro foi encerrado e o campeonato terminou!\n");
+            exit(0);
+            break;
+
         case 1:
-            printf("[AVISO] O jogador %s desisitiu!\n", p.nomeJogador);
+            printf("\n[AVISO] O jogador %s desisitiu!\n", p.nomeJogador);
             break;
 
         case 2:
@@ -34,9 +40,45 @@ void trataSIGUSR1(int s, siginfo_t* info, void* context) {
                         p.nomeJogador);
             exit(0);
             break;
+            
+        case 3:
+        	printf("\n[AVISO] Já foi atingido o limite maximo de jogadores registados no campeonato!\n");
+        	exit(0);
+        	break;
+        	
         default:
-            ;
+            return ;
     }
+}
+
+void trataCodigoErro() {
+
+    unsigned int codigo = p.cdgErro;
+    switch (codigo) {
+
+        // Nome já se encontra registado no arbitro
+        case 1:
+            printf("\n[ERRO] O nome que introduziu \"%s\" ja se encontra registado no Campeonato!\n",
+                   p.nomeJogador);
+            printf("Introduza o novo nome: ");
+            char novoNome[200];
+            scanf("%s", novoNome);
+            strcpy(p.nomeJogador, novoNome);
+            p.cdgErro = 0;
+            break;
+
+        default:
+            return ;
+    }
+
+}
+
+void formataNome() {
+    char nomeF[200];
+    for (int i = 0; i < strlen(p.nomeJogador); ++i)
+        nomeF[i] = (char) tolower(p.nomeJogador[i]);
+    nomeF[strlen(p.nomeJogador)] = '\0';
+    strcpy(p.nomeJogador, nomeF);
 }
 
 int main() {
@@ -56,9 +98,11 @@ int main() {
 
     // Preenche a struct de comunicacao
     p.pid = getpid();
-    printf("Nome:");
+    printf("Nome: ");
     fflush(stdout);
     scanf("%s",p.nomeJogador);
+    formataNome();
+    printf("%s", p.nomeJogador);
     sprintf(p.pipeCliente, FIFO_CLI, p.pid);
     strcpy(p.mensagem, " ");
     strcpy(p.resposta, "ok!");
@@ -72,26 +116,28 @@ int main() {
     do {
         // Enviar mensagem ao Arbitro
 		n = write(fd, &p, sizeof(comCliente));
-		printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
-                p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao);
+		/* printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
+                p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao); */
 
 		// Ler a resposta do Arbitro
 		fdr = open(p.pipeCliente, O_RDONLY);
 		n = read(fdr, &p, sizeof(comCliente));
 		close(fdr);
 
-		/*
-		 * if(p.cdgErro != 0)
-		 *     ANALISA ERRO E RESOLVE
-		 *
-		 */
-
-		printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
+        printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",p.pid, p.nomeJogador,
                p.mensagem, p.resposta, p.cdgErro, p.pipeCliente, p.pontuacao);
+
+		if(p.cdgErro != 0) {
+		    trataCodigoErro();
+		}
+
+		printf("%s", p.nomeJogador);
+
 
         printf("\nResposta: ");
         fflush(stdout);
         scanf("%s", p.resposta);
+
 
         if(strcmp(p.resposta, "#quit") == 0)
             abort = 1;
@@ -99,7 +145,6 @@ int main() {
     } while(!abort);
 
     // Avisar o servidor que o jogador desistiu
-    strcpy(p.resposta, "O jogador desistiu\n");
     n = write(fd, &p, sizeof(comCliente));
 
     // Fechar o pipe do Arbitro

@@ -27,7 +27,8 @@ typedef struct {
 } info;
 
 // Lista de Jogadores em execucao
-int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms);
+int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms);
+int verificaPidCliente(info* jogadores, const int* nJogadores, comCliente* coms);
 info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms);
 info preencheDadosCliente(comCliente* coms);
 void listaJogadores(const info* jogadores, const int* nJogadores);

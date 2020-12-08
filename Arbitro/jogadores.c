@@ -16,7 +16,23 @@
 #include "../Cliente/cliente.h"
 #include "arbitro.h"
 
-int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
+int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
+
+    // Se a lista de jogadores tiver vazia
+    if(jogadores == NULL)
+        return 0;
+
+    // Verifica se o jogador existe na lista
+    for (int i = 0; i < *nJogadores; ++i) {
+        if(strcmp(jogadores[i].nomeJogador, coms->nomeJogador) == 0)
+            return 1;
+    }
+
+    // Caso o jogador nao exista na lista
+    return 0;
+}
+
+int verificaPidCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
 
     // Se a lista de jogadores tiver vazia
     if(jogadores == NULL)
@@ -30,6 +46,7 @@ int verificaCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
 
     // Caso o jogador nao exista na lista
     return 0;
+
 }
 
 info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms) {
@@ -98,7 +115,6 @@ int removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
         original[(*posicao)] = original[(*nJogadores) - 1];
         aux = (info*) realloc(original, sizeof(info) * ((*nJogadores) - 1));
         if(aux != NULL) {
-            printf("ESTOU AQUI!");
             original = aux;
             --(*nJogadores);
             *jogadores = original;

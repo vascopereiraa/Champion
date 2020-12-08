@@ -29,6 +29,15 @@ void signalTerminaExecucao(const unsigned int* pid, int valor) {
 
 }
 
+void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor) {
+
+    unsigned int pidEnvio;
+    for(int i = 0; i < (*nJogadores); ++i) {
+        pidEnvio = jogadores[i].pidCliente;
+        signalTerminaExecucao(&pidEnvio, valor);
+    }
+}
+
 int criaPipeArbitro(fd_set* fds) {
 
     int fd;

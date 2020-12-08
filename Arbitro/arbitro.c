@@ -109,11 +109,13 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
                 return ;
             }
 
-
-            unsigned int cliPid = jogadores[posicao].pidCliente;
+            // Guardar PID do Cliente a remover e respetivo jogo
+            unsigned int pidCli = jogadores[posicao].pidCliente;
+            /* unsigned int pidJogo = jogadores[posicao].pidJogo; */
             if(removeJogador((info **) &jogadores, nJogadores, &posicao) == 1) {
                 /* TERMINAR O CLIENTE E JOGO */
-                signalTerminaExecucao(&cliPid, 2);
+                signalTerminaExecucao(&pidCli, 2);
+                /* signalTerminaExecucao(&pidJogo, valor); */
             }
             free(jogadorRemover);
             return;
@@ -172,23 +174,40 @@ int main(int argc, char* argv[]) {
                /* printf("Recebi: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
                        coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
 
-               if(verificaCliente(jogadores, &nJogadores, &coms) == 0 && nJogadores < setup.MAXPLAYERS)
-                   jogadores = adicionaCliente(jogadores, &nJogadores, &coms);
+               // Verifica se o cliente já está registado no arbitro (Nomes iguais)
+               if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
+                   // Verifica se excede o numero maximo de jogadores
+                   if (nJogadores < setup.MAXPLAYERS)
+                       jogadores = adicionaCliente(jogadores, &nJogadores, &coms);
+                   else {
+                       unsigned int pidCli = coms.pid;
+                       signalTerminaExecucao(&pidCli, 3);
+                   }
+               }
+               // Caso o nome do Cliente seja igual a um nome ja registado
+               else {
+                   // PID do Cliente ainda nao existe na lista
+                   if(verificaPidCliente(jogadores, &nJogadores, &coms) == 0)
+                       coms.cdgErro = 1;
+                   // Caso o PID do Cliente já exista na lista de jogadores
+                   else
+                       coms.cdgErro = 0;
+               }
 
                strcpy(coms.mensagem, "ok!");
-               coms.cdgErro = 0;
                fdr = open(coms.pipeCliente, O_WRONLY);
                n = write(fdr, &coms, sizeof(comCliente));
                close(fdr);
                puts(" ");
-               printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
-                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao);
+               /* printf("Enviei: %d\n %s\n %s\n %s\n %d\n %s\n %d\n",coms.pid, coms.nomeJogador,
+                       coms.mensagem, coms.resposta, coms.cdgErro, coms.pipeCliente, coms.pontuacao); */
             }
     } while(strcmp(cmd, "exit") != 0);
 
-    // Avisar os Clientes que o Arbitro encerrou
+    // Avisar os Clientes e Jogos que o Arbitro encerrou
     printf("O Arbitro encerrou a sua execucao!\n");
     /* AVISAR TODOS DO TERMINO DO ARBITRO -->> Enviar sinal aos clientes e jogos */
+    terminaTodosClientes(jogadores, &nJogadores, 0);
 
     // Fechar o NamedPipe do Arbitro
     close(fd);
