@@ -121,7 +121,7 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
             posicao = existeJogador(jogadores, nJogadores, jogadorRemover);
             if (posicao == -1) {
                 printf("[ERRO] O jogador %s nao se encontra no campeonato\n", jogadorRemover);
-                // free(jogadorRemover);
+                 free(jogadorRemover);
                 return ;
             }
 
