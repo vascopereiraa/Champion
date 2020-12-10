@@ -24,7 +24,8 @@ int pontuacao = 0;
 int main() {
 
     setbuf(stdout, NULL);
-    system("clear");
+
+    // Inicializacao da lista de perguntas
     perguntas lista[MAXPERGUNTAS] = {
             {"Quem foi o primero Rei de Portugal?",
                     "D. Manuel I",
@@ -379,55 +380,41 @@ int main() {
     };
 
     // Manipulacao de Sinais
-    struct sigaction actionTimer;
-    actionTimer.sa_sigaction = timer;
-    actionTimer.sa_flags = SA_SIGINFO;
-    sigaction(SIGALRM, &actionTimer, NULL);
-
     struct sigaction actionEndGame;
     actionEndGame.sa_sigaction = endGame;
     actionEndGame.sa_flags = SA_SIGINFO;
     sigaction(SIGUSR1, &actionEndGame, NULL);
 
     // DESCRICAO
-    printf("\t\tJOGO DAS PERGUNTAS\n");
+    printf("                      JOGO DAS PERGUNTAS\n");
     printf("O jogo consiste em acertar o maior numero de perguntas possivel.\n"
            "Sera apresentada a questao, seguida de 4 hipoteses de escolha. \n"
-           "Para responder basta indicar o numero da solucao pretendida.\n"
-           "Cada pergunta em um tempo limite para responder de %d segundos.\n"
-           "Entre cada pergunta existe um intervalo de %d segundos.\n", TIME, INT);
+           "Para responder basta indicar o numero da solucao pretendida.\n");
 
-    sleep(WAIT);
+    // Base do Jogo
     for (int count = 0; count < MAXPERGUNTAS; count++) {
-        system("clear");
-        printf("\t\tJOGO DAS PERGUNTAS\n");
         puts("-----------------------------------------------");
-        printf("Pergunta %d\tTempo: %d\tPontuacao: %d\n", count + 1, TIME, pontuacao);
+        printf("Pergunta %d\tPontuacao: %d\n", count + 1, pontuacao);
         printf("QUESTAO: %s\n", lista[count].pergunta);
         printf("1: %s\t2: %s\n3: %s\t4: %s\n\n",
                lista[count].respostas[0], lista[count].respostas[1],
                lista[count].respostas[2], lista[count].respostas[3]);
 
-        alarm(TIME);
-        int resposta;
-        int n = 0;
+        int resposta, n;
         do {
             n = 0;
             printf("RESPOSTA: ");
             n = scanf("%d", &resposta);
-        } while(resposta > 4 || resposta <= 0 && n == 0);
+        } while(n == 0 || (resposta > 4 || resposta < 1));
 
-        alarm(0);
         if(n == 1) {
             if (resposta == lista[count].solucao) {
                 printf("Resposta Correta!\n");
                 pontuacao++;
-                sleep(INT);
             } else {
                 printf("Resposta Errada!\n");
                 if (pontuacao > 0)
                     pontuacao--;
-                sleep(INT);
             }
         }
     }

@@ -16,19 +16,8 @@
 
 #include "sinais.h"
 
-void timer(int s, siginfo_t *info, void *context) {
-    if (info->si_pid == 0) {
-        printf("\n[TEMPO] Esgotou o tempo para responder! -> Resposta Errada\n");
-        printf("ASD\n");
-        if (pontuacao > 0)
-            pontuacao--;
-        sleep(INT);
-    }
-}
-
 void endGame(int s, siginfo_t *info, void *context) {
     if(s == SIGUSR1) {
-        printf("%d\n", info->si_value);
         exit(pontuacao);
     }
 }

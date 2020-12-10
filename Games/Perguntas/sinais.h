@@ -12,13 +12,8 @@
 #ifndef PERGUNTAS_SINAIS_H
 #define PERGUNTAS_SINAIS_H
 
-#define WAIT 5
-#define TIME 5
-#define INT 2
-
 int pontuacao;
 
-void timer(int s, siginfo_t *info, void *context);
 void endGame(int s, siginfo_t *info, void *context);
 
 #endif //PERGUNTAS_SINAIS_H
