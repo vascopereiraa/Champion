@@ -28,9 +28,6 @@ typedef struct {
     int pontuacao;
 } comCliente;
 
-// Tratamento de Sinais
-void trataSIGUSR1(int s, siginfo_t* info, void* context);
-
 // Tratamento de Erros
 void trataCodigoErro();
 

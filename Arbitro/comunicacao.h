@@ -14,12 +14,10 @@
 
 #include "arbitro.h"
 
-// Sinais
-void signalTerminaExecucao(const unsigned int* pid, int valor);
-void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor);
-
 // Named Pipes
 int criaPipeArbitro(fd_set* fds);
+void enviaMensagemCliente(comCliente* coms);
 void verificaLocalPipes();
+void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor);
 
 #endif //ARBITRO_COMUNICACAO_H

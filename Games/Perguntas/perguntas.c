@@ -88,9 +88,9 @@ int main() {
                     "Pt",
                     "Ag" ,
                     "Zn",
-                    4 },
+                    3 },
 
-            { "Quem foi o primeiro ganhador do Prêmio Nobel de Literatura?",
+            { "Quem foi o primeiro vencedor do Prêmio Nobel de Literatura?",
                     "Um ensaísta",
                     "Um dramaturgo",
                     "Um novelista",

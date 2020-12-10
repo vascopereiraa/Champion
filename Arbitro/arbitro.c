@@ -125,14 +125,26 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
                 return ;
             }
 
-            // Guardar PID do Cliente a remover e respetivo jogo
-            unsigned int pidCli = jogadores[posicao].pidCliente;
+            // Guardar Named Pipe do Cliente e o seu nome
+            char pipeCli[200];
+            strcpy(pipeCli, jogadores[posicao].pipeCliente);
             /* unsigned int pidJogo = jogadores[posicao].pidJogo; */
             if(removeJogador((info **) &jogadores, nJogadores, &posicao) == 1) {
                 /* TERMINAR O CLIENTE E JOGO */
-                signalTerminaExecucao(&pidCli, 2);
+
+                // Mandar mensagem ao cliente para terminar a execucao
+                comCliente coms;
+                strcpy(coms.nomeJogador, jogadorRemover);
+                strcpy(coms.pipeCliente, pipeCli);
+                coms.cdgErro = 4;
+                enviaMensagemCliente(&coms);
+
                 /* signalTerminaExecucao(&pidJogo, valor); */
+
+                free(jogadorRemover);
+                return ;
             }
+            printf("[ERRO] Nao foi possivel remover o jogador %s\n", jogadorRemover);
             free(jogadorRemover);
             return;
         }
@@ -169,7 +181,7 @@ void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
 
 int main(int argc, char* argv[]) {
 
-    int fd, fdr, res, n;
+    int fd, res, n;
     char cmd[200], **jogos = NULL;
     comCliente coms;
     info* jogadores = NULL;
@@ -213,8 +225,8 @@ int main(int argc, char* argv[]) {
                    if (nJogadores < setup.MAXPLAYERS)
                        jogadores = adicionaCliente(jogadores, &nJogadores, &coms);
                    else {
-                       unsigned int pidCli = coms.pid;
-                       signalTerminaExecucao(&pidCli, 3);
+                       coms.cdgErro = 5;
+                       enviaMensagemCliente(&coms);
                    }
                 }
 
@@ -238,11 +250,8 @@ int main(int argc, char* argv[]) {
                     printf("\n%s", coms.resposta);
                 }
 
-                // Enviar informacao ao Cliente pelo respetivo Named Pipe
-                fdr = open(coms.pipeCliente, O_WRONLY);
-                n = write(fdr, &coms, sizeof(comCliente));
-                close(fdr);
-                puts(" ");
+                // Envia mensagem ao Cliente
+                enviaMensagemCliente(&coms);
 
             }
     } while(strcmp(cmd, "exit") != 0);
@@ -250,11 +259,12 @@ int main(int argc, char* argv[]) {
     // Avisar os Clientes e Jogos que o Arbitro encerrou
     printf("O Arbitro encerrou a sua execucao!\n");
     /* AVISAR TODOS DO TERMINO DO ARBITRO -->> Enviar sinal aos clientes e jogos */
-    terminaTodosClientes(jogadores, &nJogadores, 0);
+    terminaTodosClientes(jogadores, &nJogadores, 3);
 
     // Fechar o NamedPipe do Arbitro
     close(fd);
     unlink(FIFO_ARB);
+    remove(FIFO_ARB);
 
     // Apaga dados em memoria dinamica
     free(setup.GAMEDIR);

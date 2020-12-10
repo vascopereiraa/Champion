@@ -17,26 +17,10 @@
 #include <sys/select.h>
 #include <errno.h>
 #include <signal.h>
+#include <string.h>
 
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
-
-void signalTerminaExecucao(const unsigned int* pid, int valor) {
-
-    union sigval value;
-    value.sival_int = valor;
-    sigqueue((*pid), SIGUSR1, value);
-
-}
-
-void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor) {
-
-    unsigned int pidEnvio;
-    for(int i = 0; i < (*nJogadores); ++i) {
-        pidEnvio = jogadores[i].pidCliente;
-        signalTerminaExecucao(&pidEnvio, valor);
-    }
-}
 
 int criaPipeArbitro(fd_set* fds) {
 
@@ -55,6 +39,17 @@ int criaPipeArbitro(fd_set* fds) {
     exit(3);
 }
 
+void enviaMensagemCliente(comCliente* coms) {
+    int fdr, n;
+
+    // Enviar informacao ao Cliente pelo respetivo Named Pipe
+    fdr = open(coms->pipeCliente, O_WRONLY);
+    n = write(fdr, coms, sizeof(comCliente));
+    close(fdr);
+    puts(" ");
+
+}
+
 void verificaLocalPipes() {
 
     if(mkdir("./Pipes", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0) {
@@ -66,6 +61,17 @@ void verificaLocalPipes() {
 
     fprintf(stderr, "[ERRO] A pasta de armazenamento de named pipes encontra-se indisponivel!\n");
     exit(2);
+
+}
+
+void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor) {
+
+    for(int i = 0; i < (*nJogadores); ++i) {
+        comCliente coms;
+        strcpy(coms.pipeCliente, jogadores[i].pipeCliente);
+        coms.cdgErro = valor;
+        enviaMensagemCliente(&coms);
+    }
 
 }
 

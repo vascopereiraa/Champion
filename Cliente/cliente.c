@@ -23,41 +23,22 @@
 // Dados do Jogador
 comCliente p;
 
-void trataSIGUSR1(int s, siginfo_t* info, void* context) {
-    int valor = info->si_value.sival_int;
-    switch (valor) {
-        case 0:
-            printf("\n[AVISO] O Arbitro foi encerrado e o campeonato terminou!\n");
-            exit(0);
-            break;
+void encerraCliente(int* fd) {
+    // Fechar o pipe do Arbitro
+    close(*fd);
 
-        case 1:
-            printf("\n[AVISO] O jogador %s desisitiu!\n", p.nomeJogador);
-            break;
-
-        case 2:
-            printf("\n[AVISO] O jogador %s foi removido do campeonato pelo administrador!\n",
-                        p.nomeJogador);
-            exit(0);
-            break;
-            
-        case 3:
-        	printf("\n[AVISO] Já foi atingido o limite maximo de jogadores registados no campeonato!\n");
-        	exit(0);
-        	break;
-        	
-        default:
-            return ;
-    }
+    // Fechar o pipe do Cliente
+    unlink(p.pipeCliente);
+    remove(p.pipeCliente);
 }
 
-void trataCodigoErro() {
+void trataCodigoErro(int* fd) {
 
     unsigned int codigo = p.cdgErro;
     switch (codigo) {
 
-        // Nome já se encontra registado no arbitro
         case 1:
+            // Nome já se encontra registado no arbitro
             printf("\n[ERRO] O nome que introduziu \"%s\" ja se encontra registado no Campeonato!\n",
                    p.nomeJogador);
             printf("Introduza o novo nome: ");
@@ -69,9 +50,32 @@ void trataCodigoErro() {
             break;
 
         case 2:
+            // Comando #mygame
             printf("\nO seu jogo é \"%s\"\n", p.mensagem);
             strcpy(p.mensagem, " ");
             p.cdgErro = 0;
+            break;
+
+        case 3:
+            // Arbitro foi encerrado
+            printf("\n[AVISO] O Arbitro foi encerrado e o campeonato terminou!\n");
+            encerraCliente(fd);
+            exit(0);
+            break;
+
+        case 4:
+            // Removido pelo utilizador -->> k<nomeJogador>
+            printf("\n[AVISO] O jogador %s foi removido do campeonato pelo administrador!\n",
+                   p.nomeJogador);
+            encerraCliente(fd);
+            exit(0);
+            break;
+
+        case 5:
+            // Numero maximo de players atingido
+            printf("\n[AVISO] Já foi atingido o limite maximo de jogadores registados no campeonato!\n");
+            encerraCliente(fd);
+            exit(0);
             break;
 
         default:
@@ -89,15 +93,10 @@ void formataNome() {
 }
 
 int main() {
-    int fd, n, fdr, abort = 0;
+    int fd, n, fdr, res, abort = 0;
+    fd_set  fds;
 
-    // Tratamento do sinal SIGUSR1
-    struct sigaction act;
-    act.sa_sigaction = trataSIGUSR1;
-    act.sa_flags = SA_SIGINFO;
-    sigaction(SIGUSR1, &act, NULL);
-
-    // Verifica se existe o NamedPipe do Arbitro
+    // Verifica se existe o Named Pipe do Arbitro
     if(access(FIFO_ARB , F_OK) != 0){
         fprintf(stderr , "[ERRO] O Arbitro nao se encontra em execucao\n");
         exit(1);
@@ -109,55 +108,69 @@ int main() {
     fflush(stdout);
     scanf("%s",p.nomeJogador);
     formataNome();
-    printf("%s", p.nomeJogador);
     sprintf(p.pipeCliente, FIFO_CLI, p.pid);
     strcpy(p.mensagem, " ");
     strcpy(p.resposta, " ");
     p.cdgErro = 0;
     p.pontuacao = 0;
 
-    // Criar o NamedPipe do Cliente
+    // Cria e abre o Named Pipe do Cliente
     mkfifo(p.pipeCliente,0600);
-    fd = open(FIFO_ARB , O_WRONLY);
+    fdr = open(p.pipeCliente, O_RDWR);
+
+    // Informar o arbitro que existe
+    fd = open(FIFO_ARB, O_WRONLY);
+    n = write(fd, &p, sizeof(comCliente));
+    close(fd);
 
     do {
-        // Enviar mensagem ao Arbitro
-		n = write(fd, &p, sizeof(comCliente));
+        // Prompt de Resposta
+        printf("\nCliente > ");
+        fflush(stdout);
 
-		// Ler a resposta do Arbitro
-		fdr = open(p.pipeCliente, O_RDONLY);
-		n = read(fdr, &p, sizeof(comCliente));
-		close(fdr);
+        FD_ZERO(&fds);
+        FD_SET(0, &fds);
+        FD_SET(fdr, &fds);
 
-		// Trata de Erros na Comunicacao
-        if (p.cdgErro == 0) {
-            // Imprime informacao passada pelo Arbitro
-            printf("\n%s", p.mensagem);
+        res = select(fdr + 1, &fds, NULL, NULL, NULL);
+        if(res > 0 && FD_ISSET(0, &fds)) {
+
+            // Pede resposta para enviar ao Arbitro
+            scanf("%s", p.resposta);
+
+            // Termina a execucao do Cliente
+            if(strcmp(p.resposta, "#quit") == 0) {
+                abort = 1;
+            }
+
+            // Enviar mensagem ao Arbitro
+            fd = open(FIFO_ARB, O_WRONLY);
+            n = write(fd, &p, sizeof(comCliente));
+            close(fd);
         }
         else {
-            trataCodigoErro();
+            if(res > 0 && FD_ISSET(fdr, &fds)) {
+                // Ler a mensagem recebida do Arbitro
+                n = read(fdr, &p, sizeof(comCliente));
+
+                // Trata de Erros na Comunicacao
+                if (p.cdgErro == 0) {
+                    // Imprime informacao passada pelo Arbitro
+                    printf("\n%s", p.mensagem);
+                }
+                else {
+                    trataCodigoErro(&fd);
+                }
+
+            }
         }
-
-        // Pede resposta para enviar ao Arbitro
-        printf("\nResposta: ");
-        fflush(stdout);
-        scanf("%s", p.resposta);
-
-        // Termina a execucao do Cliente
-        if(strcmp(p.resposta, "#quit") == 0)
-            abort = 1;
 
     } while(!abort);
 
-    // Avisar o servidor que o jogador desistiu
-    n = write(fd, &p, sizeof(comCliente));
+    // Encerra a execucao do Cliente
+    encerraCliente(&fd);
 
-    // Fechar o pipe do Arbitro
-    close(fd);
-
-    // Fechar o pipe do Cliente
-    unlink(p.pipeCliente);
-
+    // Termina
     exit(EXIT_SUCCESS);
 }
 
