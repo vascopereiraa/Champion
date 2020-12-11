@@ -21,7 +21,7 @@ Games/Perguntas/.idea/**
 Games/Perguntas/CMakeLists.txt
 Games/Perguntas/cmake-build-debug/**
 Games/Perguntas/jogo.o
-Games/Pergutas/sinais.o
+Games/Perguntas/sinais.o
 
 Games/g_perguntas
 arbitro
