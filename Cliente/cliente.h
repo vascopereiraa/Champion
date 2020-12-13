@@ -34,4 +34,7 @@ void trataCodigoErro();
 // Funcao de Formatacao
 void formataNome();
 
+// Comunicacao com o Arbitro
+void enviaMensagemArbitro(comCliente* coms);
+
 #endif //CLIENTE_CLIENTE_H

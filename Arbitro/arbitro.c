@@ -102,6 +102,11 @@ char* sorteiaJogos(char** jogos, const int* nJogos) {
     int valor;
     srand(time(NULL));
 
+    if((*nJogos) == 0) {
+        printf("[ERRO] Nao exitem jogos disponiveis para sortear!");
+        return "  ERRO NA PASTA GAMEDIR";
+    }
+
     do {
         valor = rand() % (*nJogos);
         if (valor >= 0 && valor <= (*nJogos))
@@ -146,6 +151,7 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
             /* unsigned int pidJogo = jogadores[posicao].pidJogo; */
             if(removeJogador((info **) &jogadores, nJogadores, &posicao) == 1) {
                 /* TERMINAR O CLIENTE E JOGO */
+                printf("[AVISO] O jogador %s foi removido com sucesso!", jogadorRemover);
 
                 // Mandar mensagem ao cliente para terminar a execucao
                 comCliente coms;
@@ -177,7 +183,6 @@ void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
 
     if(strcmp(coms->resposta, "#mygame") == 0) {
         obtemJogoCliente(coms, jogadores, nJogadores);
-
     }
 
     if(strcmp(coms->resposta, "#quit") == 0) {
@@ -262,7 +267,6 @@ int main(int argc, char* argv[]) {
                 else {
                     // Mensagem destinada ao Jogo
                     printf("\n%s", coms.resposta);
-                    strcpy(coms.mensagem, coms.resposta);
                 }
 
                 // Envia mensagem ao Cliente

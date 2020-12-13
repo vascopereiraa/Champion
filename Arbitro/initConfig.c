@@ -46,12 +46,12 @@ int getMaxPlayers() {
     
     if (getenv("MAXPLAYERS") == NULL) {  //NOT DEFINED
         maxplayers = PLAYER_LIMIT;
-        fprintf(stderr, "[ERRO] maxplayers nao definido -> maxplayers = %d\n", maxplayers);
+        fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", maxplayers);
     }
     else {
         if (strtol(getenv("MAXPLAYERS"), NULL, 10) == 0) {  //WRONG TYPE
             maxplayers = PLAYER_LIMIT;
-            fprintf(stderr, "[ERRO] maxplayers nao definido -> maxplayers = %d\n", maxplayers);
+            fprintf(stderr, "[ERRO] MAXPLAYERS nao definido -> MAXPLAYERS = %d\n", maxplayers);
         }
         else
             maxplayers = (int) strtol(getenv("MAXPLAYERS"), NULL, 10);

@@ -47,6 +47,7 @@ void trataCodigoErro(int* fd) {
             strcpy(p.nomeJogador, novoNome);
             formataNome();
             p.cdgErro = 0;
+            enviaMensagemArbitro(&p);
             break;
 
         case 2:
@@ -94,6 +95,16 @@ void formataNome() {
     strcpy(p.nomeJogador, nomeF);
 }
 
+void enviaMensagemArbitro(comCliente* coms) {
+
+    int fd, n;
+
+    // Enviar mensagem ao Arbitro
+    fd = open(FIFO_ARB, O_WRONLY);
+    n = write(fd, coms, sizeof(comCliente));
+    close(fd);
+}
+
 int main() {
     int fd, n, fdr, res, abort = 0;
     fd_set  fds;
@@ -121,9 +132,7 @@ int main() {
     fdr = open(p.pipeCliente, O_RDWR);
 
     // Informar o arbitro que existe
-    fd = open(FIFO_ARB, O_WRONLY);
-    n = write(fd, &p, sizeof(comCliente));
-    close(fd);
+    enviaMensagemArbitro(&p);
 
     do {
         // Prompt de Resposta
@@ -146,9 +155,7 @@ int main() {
             }
 
             // Enviar mensagem ao Arbitro
-            fd = open(FIFO_ARB, O_WRONLY);
-            n = write(fd, &p, sizeof(comCliente));
-            close(fd);
+            enviaMensagemArbitro(&p);
         }
         else {
             if(res > 0 && FD_ISSET(fdr, &fds)) {
@@ -163,7 +170,6 @@ int main() {
                 else {
                     trataCodigoErro(&fd);
                 }
-
             }
         }
 
