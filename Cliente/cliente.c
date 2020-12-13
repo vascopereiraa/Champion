@@ -51,8 +51,10 @@ void trataCodigoErro(int* fd) {
 
         case 2:
             // Comando #mygame
-            printf("\nO seu jogo é \"%s\"\n", p.mensagem);
-            strcpy(p.mensagem, " ");
+            printf("\nNome do Jogo: \"%c", toupper(p.mensagem[2]));
+            for(int i = 3; i < strlen(p.mensagem); ++i)
+                printf("%c", p.mensagem[i]);
+            printf("\"\n");
             p.cdgErro = 0;
             break;
 

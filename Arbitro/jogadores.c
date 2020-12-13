@@ -49,7 +49,7 @@ int verificaPidCliente(info* jogadores, const int* nJogadores, comCliente* coms)
 
 }
 
-info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms) {
+info *adicionaCliente(info *jogadores, int *nJogadores, comCliente *coms, char **jogos, const int *nJogos) {
 
     info* array = NULL;
 
@@ -62,7 +62,8 @@ info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms) {
 
     // Preencher os dados do jogador
     jogadores = array;
-    jogadores[(*nJogadores)++] = preencheDadosCliente(coms);
+    jogadores[(*nJogadores)] = preencheDadosCliente(coms);
+    strcpy(jogadores[(*nJogadores)++].nomeJogo, sorteiaJogos(jogos, nJogos));
 
     return jogadores;
 }

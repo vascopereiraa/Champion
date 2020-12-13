@@ -15,8 +15,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/select.h>
-#include <fcntl.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "initConfig.h"
 #include "../Cliente/cliente.h"
@@ -69,7 +69,7 @@ char** obtemJogos(char** jogos, int* nJogos, const init* setup) {
 
 void listaJogos(const char** jogos, const int* nJogos) {
 
-    int tam = 0;
+    int tam;
     for(int i = 0; i < (*nJogos); ++i) {
         tam = (int) strlen(jogos[i]);
         printf("%c", toupper(jogos[i][2]));
@@ -87,6 +87,7 @@ void libertarJogos(char** jogos, int* nJogos) {
 
 }
 
+// Envia ao Cliente o nome do jogo que tem associado
 void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores) {
 
     for(int i = 0; i < (*nJogadores); ++i)
@@ -94,6 +95,20 @@ void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores) 
             strcpy(coms->mensagem, jogadores[i].nomeJogo);
             coms->cdgErro = 2;
         }
+}
+
+char* sorteiaJogos(char** jogos, const int* nJogos) {
+
+    int valor;
+    srand(time(NULL));
+
+    do {
+        valor = rand() % (*nJogos);
+        if (valor >= 0 && valor <= (*nJogos))
+            return jogos[valor];
+    } while (valor < 0 || valor > (*nJogos));
+
+    return " ";
 }
 
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
@@ -162,7 +177,7 @@ void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
 
     if(strcmp(coms->resposta, "#mygame") == 0) {
         obtemJogoCliente(coms, jogadores, nJogadores);
-        return ;
+
     }
 
     if(strcmp(coms->resposta, "#quit") == 0) {
@@ -175,7 +190,6 @@ void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
             // Enviar sinal ao jogo para terminar
         }
     }
-
 
 }
 
@@ -223,7 +237,7 @@ int main(int argc, char* argv[]) {
                 if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
                    // Verifica se excede o numero maximo de jogadores
                    if (nJogadores < setup.MAXPLAYERS)
-                       jogadores = adicionaCliente(jogadores, &nJogadores, &coms);
+                       jogadores = adicionaCliente(jogadores, &nJogadores, &coms, jogos, &nJogos);
                    else {
                        coms.cdgErro = 5;
                        enviaMensagemCliente(&coms);
@@ -248,6 +262,7 @@ int main(int argc, char* argv[]) {
                 else {
                     // Mensagem destinada ao Jogo
                     printf("\n%s", coms.resposta);
+                    strcpy(coms.mensagem, coms.resposta);
                 }
 
                 // Envia mensagem ao Cliente

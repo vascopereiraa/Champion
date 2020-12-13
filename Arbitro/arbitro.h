@@ -29,7 +29,7 @@ typedef struct {
 // Lista de Jogadores em execucao
 int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms);
 int verificaPidCliente(info* jogadores, const int* nJogadores, comCliente* coms);
-info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms);
+info* adicionaCliente(info* jogadores, int* nJogadores, comCliente* coms, char** jogos, const int* nJogos);
 info preencheDadosCliente(comCliente* coms);
 void listaJogadores(const info* jogadores, const int* nJogadores);
 int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover);
@@ -41,6 +41,7 @@ char** obtemJogos(char** jogos, int* nJogos, const init* setup);
 void listaJogos(const char** jogos, const int* nJogos);
 void libertarJogos(char** jogos, int* nJogos);
 void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores);
+char* sorteiaJogos(char** jogos, const int* nJogos);
 
 // Comandos do Administrador
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
