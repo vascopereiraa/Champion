@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #include "perguntas.h"
-#include "sinais.h"
+#include "../sinais.h"
 
 #define MAXPERGUNTAS 50
 

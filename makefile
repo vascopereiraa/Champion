@@ -1,12 +1,17 @@
 # Compilacao de todos os programas
 all: jogo arbitro cliente
 
+# Ficheiros *.o do Jogo (Adivinha)
+Games/Adivinha/adivinha.o: ./Games/Adivinha/adivinha.c ./Games/sinais.h
+	gcc -c ./Games/Adivinha/adivinha.c -o ./Games/Adivinha/adivinha.o
+
 # Ficheiros *.o do Jogo (Perguntas)
-Games/Perguntas/jogo.o: ./Games/Perguntas/perguntas.c ./Games/Perguntas/perguntas.h ./Games/Perguntas/sinais.h
-	gcc -c ./Games/Perguntas/perguntas.c -o ./Games/Perguntas/jogo.o
-	
-Games/Perguntas/sinais.o: ./Games/Perguntas/sinais.c ./Games/Perguntas/sinais.h
-	gcc -c ./Games/Perguntas/sinais.c -o ./Games/Perguntas/sinais.o
+Games/Perguntas/perguntas.o: ./Games/Perguntas/perguntas.c ./Games/Perguntas/perguntas.h ./Games/sinais.h
+	gcc -c ./Games/Perguntas/perguntas.c -o ./Games/Perguntas/perguntas.o
+
+# Ficheiros *.o dos sinais dos Jogos	
+Games/sinais.o: ./Games/sinais.c ./Games/sinais.h
+	gcc -c ./Games/sinais.c -o ./Games/sinais.o
 
 # Ficheiros *.o do Arbitro
 Arbitro/arbitro.o: ./Arbitro/arbitro.c ./Arbitro/arbitro.h ./Arbitro/initConfig.h ./Arbitro/comunicacao.h ./Cliente/cliente.h
@@ -26,10 +31,14 @@ Cliente/cliente.o: ./Cliente/cliente.c ./Cliente/cliente.h
 	gcc -c ./Cliente/cliente.c -o Cliente/cliente.o
 
 # Executavel do Jogo (Perguntas)
-Games/g_perguntas: Games/Perguntas/jogo.o Games/Perguntas/sinais.o
-	gcc -o Games/g_perguntas ./Games/Perguntas/jogo.o ./Games/Perguntas/sinais.o
+Games/g_perguntas: Games/Perguntas/perguntas.o Games/sinais.o
+	gcc -o Games/g_perguntas ./Games/Perguntas/perguntas.o ./Games/sinais.o
 	
-jogo: Games/g_perguntas
+# Executavel do Jogo (Adivinha)
+Games/g_adivinha: Games/Adivinha/adivinha.o Games/sinais.o
+	gcc -o Games/g_adivinha ./Games/Adivinha/adivinha.o ./Games/sinais.o
+
+jogo: Games/g_perguntas Games/g_adivinha
 	
 # Executavel do Arbitro
 arbitro: Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o

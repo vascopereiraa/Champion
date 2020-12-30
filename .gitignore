@@ -20,9 +20,18 @@ Games/Perguntas/.idea
 Games/Perguntas/.idea/**
 Games/Perguntas/CMakeLists.txt
 Games/Perguntas/cmake-build-debug/**
-Games/Perguntas/jogo.o
-Games/Perguntas/sinais.o
+Games/Perguntas/perguntas.o
+
+Games/Adivinha/cmake-build-debug
+Games/Adivinha/.idea
+Games/Adivinha/.idea/**
+Games/Adivinha/CMakeLists.txt
+Games/Adivinha/cmake-build-debug/**
+Games/Adivinha/adivinha.o
+
+Games/sinais.o
 
 Games/g_perguntas
+Games/g_adivinha
 arbitro
 cliente

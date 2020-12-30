@@ -18,6 +18,9 @@
 
 void endGame(int s, siginfo_t *info, void *context) {
     if(s == SIGUSR1) {
+    	if(pontuacao < 0)
+    		pontuacao = 0;
+    		
         exit(pontuacao);
     }
 }
