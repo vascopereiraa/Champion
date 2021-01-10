@@ -18,13 +18,20 @@ typedef struct {
     // Dados Cliente
     char nomeJogador[200];
     char pipeCliente[200];
+    char pipeThread[200];
     unsigned int pidCliente;
 
     // Dados Jogo
     char nomeJogo[200];
     unsigned int pidJogo;
     int pontuacao;
+
+    int intComunicacao;         // Flag de Comunicacoes
+    pthread_mutex_t *trinco;    // Mutex para manipulacao de dados Cliente - Jogo
 } info;
+
+info* jogadores;
+int nJogadores;
 
 // Lista de Jogadores em execucao
 int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms);
@@ -47,5 +54,9 @@ char* sorteiaJogos(char** jogos, const int* nJogos);
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos);
 void trataComandosCliente(comCliente* comando, info* jogadores, int* nJogadores);
+
+// Gestao do Campeonato
+void iniciaCampeonato();
+void terminaCampeonato();
 
 #endif //ARBITRO_ARBITRO_H

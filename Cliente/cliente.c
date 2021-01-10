@@ -15,7 +15,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
 #include <ctype.h>
 
 #include "cliente.h"
@@ -81,10 +80,14 @@ void trataCodigoErro(int* fd) {
             exit(0);
             break;
 
+        case 6:
+            // Troca o Pipe do Arbitro do geral para o pipe da Thread
+            sprintf(p.pipeArbitro, FIFO_THR, p.pid);
+            break;
+
         default:
             return ;
     }
-
 }
 
 void formataNome() {
@@ -95,17 +98,20 @@ void formataNome() {
     strcpy(p.nomeJogador, nomeF);
 }
 
-void enviaMensagemArbitro(comCliente* coms) {
+void enviaMensagemArbitro() {
 
     int fd, n;
 
     // Enviar mensagem ao Arbitro
-    fd = open(FIFO_ARB, O_WRONLY);
-    n = write(fd, coms, sizeof(comCliente));
+    fd = open(p.pipeArbitro, O_WRONLY);
+    n = write(fd, &p, sizeof(comCliente));
     close(fd);
 }
 
 int main() {
+
+    setbuf(stdout, NULL);
+
     int fd, n, fdr, res, abort = 0;
     fd_set  fds;
 
@@ -122,6 +128,7 @@ int main() {
     scanf("%s",p.nomeJogador);
     formataNome();
     sprintf(p.pipeCliente, FIFO_CLI, p.pid);
+    strcpy(p.pipeArbitro, FIFO_ARB);
     strcpy(p.mensagem, " ");
     strcpy(p.resposta, " ");
     p.cdgErro = 0;
@@ -132,7 +139,7 @@ int main() {
     fdr = open(p.pipeCliente, O_RDWR);
 
     // Informar o arbitro que existe
-    enviaMensagemArbitro(&p);
+    enviaMensagemArbitro();
 
     do {
         // Prompt de Resposta
@@ -146,6 +153,8 @@ int main() {
         res = select(fdr + 1, &fds, NULL, NULL, NULL);
         if(res > 0 && FD_ISSET(0, &fds)) {
 
+            memset(p.resposta, 0, BUFF_SIZE);
+
             // Pede resposta para enviar ao Arbitro
             scanf("%s", p.resposta);
 
@@ -155,7 +164,7 @@ int main() {
             }
 
             // Enviar mensagem ao Arbitro
-            enviaMensagemArbitro(&p);
+            enviaMensagemArbitro();
         }
         else {
             if(res > 0 && FD_ISSET(fdr, &fds)) {
@@ -169,6 +178,7 @@ int main() {
                 }
                 else {
                     trataCodigoErro(&fd);
+                    fflush(stdout);
                 }
             }
         }

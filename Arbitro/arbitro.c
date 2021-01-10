@@ -17,11 +17,18 @@
 #include <sys/select.h>
 #include <ctype.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "initConfig.h"
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
 #include "arbitro.h"
+
+init setup;
+info* jogadores;
+int nJogadores;
+int timer = 0;
+int decorreCampeonato = 0;
 
 char** obtemJogos(char** jogos, int* nJogos, const init* setup) {
 
@@ -198,17 +205,46 @@ void trataComandosCliente(comCliente* coms, info* jogadores, int* nJogadores) {
 
 }
 
+void iniciaCampeonato() {
+
+    // Marca inicio do campeonato
+    decorreCampeonato = 1;
+
+    // Inicia a comunicacao entre o Cliente e Jogo
+    for(int i = 0; i < nJogadores; ++i)
+        jogadores[i].intComunicacao = 0;
+
+}
+
+void terminaCampeonato() {
+
+    // Marca o final do campeonato
+    decorreCampeonato = 0;
+
+    // Fechar todas as threads, fechar todos os jogos e guardar o exit status
+
+    // Enviar as respetivas pontuacoes aos clientes
+
+    // Anunciar o vencedor
+
+    // Fechar a thread do temporizador
+
+    timer = 0;
+}
+
 int main(int argc, char* argv[]) {
 
     int fd, res, n;
     char cmd[200], **jogos = NULL;
     comCliente coms;
-    info* jogadores = NULL;
-    int nJogadores = 0, nJogos = 0;
-
+    int nJogos = 0;
+    pthread_t* listaThreads = NULL;
+    pthread_t temporizador;
+    pthread_mutex_t trincoComunicacao;
+    pthread_mutex_t trincoAddJogadores;
 
     // Definicao do Ambiente
-    const init setup = initialization(argc, argv);
+    setup = initialization(argc, argv);
     printInit(setup);
 
     // Carregar a lista de jogos
@@ -217,7 +253,11 @@ int main(int argc, char* argv[]) {
     // Criacao do NamedPipe do Arbitro
     verificaLocalPipes();
     fd_set fds;
-    fd = criaPipeArbitro(&fds);
+    fd = criaPipeArbitro(&fds, FIFO_ARB);
+
+    // Iniciazacao dos Mutexes
+    pthread_mutex_init(&trincoComunicacao, NULL);
+    pthread_mutex_init(&trincoAddJogadores, NULL);
 
     do {
         printf("\nComando: ");
@@ -241,14 +281,42 @@ int main(int argc, char* argv[]) {
                 // Verifica se o cliente já está registado no arbitro (Nomes iguais)
                 if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
                    // Verifica se excede o numero maximo de jogadores
-                   if (nJogadores < setup.MAXPLAYERS)
+                   if (nJogadores < setup.MAXPLAYERS) {
+
+                       pthread_mutex_lock(&trincoAddJogadores);
+
+                       // Adicionar o jogador a lista de jogadores & cria uma nova thread na lista de threads
                        jogadores = adicionaCliente(jogadores, &nJogadores, &coms, jogos, &nJogos);
+
+                       pthread_t* temp = (pthread_t*) realloc(listaThreads, sizeof(pthread_t) * nJogadores);
+                       if(temp == NULL) {
+                           fprintf(stderr, "[ERRO] Nao foi possivel acrescentar thread à lista de threads!\n");
+                           exit(9);
+                       }
+                       listaThreads = temp;
+
+                       // Mandar o Cliente trocar o canal de comunicacao
+                       coms.cdgErro = 6;
+                       enviaMensagemCliente(&coms);
+
+                       jogadores[nJogadores - 1].trinco = &trincoComunicacao;
+
+                       // Criar a thread
+                       pthread_create(&listaThreads[nJogadores - 1], NULL, threadsClientes, (void *) &jogadores[nJogadores - 1]);
+
+                       // Verificar temporizacao
+                       if(nJogadores == 2 && timer == 0) {
+                           timer = 1;
+                           pthread_create(&temporizador, NULL, threadTemporizacao, NULL);
+                       }
+
+                       pthread_mutex_unlock(&trincoAddJogadores);
+                   }
                    else {
                        coms.cdgErro = 5;
                        enviaMensagemCliente(&coms);
                    }
                 }
-
                 // Caso o nome do Cliente seja igual a um nome ja registado
                 else {
                    // PID do Cliente ainda nao existe na lista
@@ -259,16 +327,6 @@ int main(int argc, char* argv[]) {
                        coms.cdgErro = 0;
                 }
 
-                // Tratamento da resposta do Cliente
-                if(coms.resposta[0] == '#') {
-                    // Mensagem destinada ao Arbitro
-                    trataComandosCliente(&coms, jogadores, &nJogadores);
-                }
-                else {
-                    // Mensagem destinada ao Jogo
-                    printf("\n%s", coms.resposta);
-                }
-
                 // Envia mensagem ao Cliente
                 enviaMensagemCliente(&coms);
 
@@ -277,6 +335,7 @@ int main(int argc, char* argv[]) {
 
     // Avisar os Clientes e Jogos que o Arbitro encerrou
     printf("O Arbitro encerrou a sua execucao!\n");
+
     /* AVISAR TODOS DO TERMINO DO ARBITRO -->> Enviar sinal aos clientes e jogos */
     terminaTodosClientes(jogadores, &nJogadores, 3);
 

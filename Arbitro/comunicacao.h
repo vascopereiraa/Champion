@@ -15,9 +15,13 @@
 #include "arbitro.h"
 
 // Named Pipes
-int criaPipeArbitro(fd_set* fds);
+int criaPipeArbitro(fd_set* fds, char* pipe);
 void enviaMensagemCliente(comCliente* coms);
 void verificaLocalPipes();
 void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor);
+
+// Funcoes de manipulacao de Threads
+void* threadsClientes(void* dados_t);
+void* threadTemporizacao();
 
 #endif //ARBITRO_COMUNICACAO_H

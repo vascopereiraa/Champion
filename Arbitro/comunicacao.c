@@ -22,15 +22,15 @@
 #include "../Cliente/cliente.h"
 #include "comunicacao.h"
 
-int criaPipeArbitro(fd_set* fds) {
+int criaPipeArbitro(fd_set* fds, char* pipe) {
 
     int fd;
 
     // Acede/Cria named pipe do Arbitro
-    if(access(FIFO_ARB, F_OK) != 0) {
-        mkfifo(FIFO_ARB, 0600);
+    if(access(pipe, F_OK) != 0) {
+        mkfifo(pipe, 0600);
 
-        fd = open(FIFO_ARB, O_RDWR);
+        fd = open(pipe, O_RDWR);
         return fd;
     }
 
@@ -46,7 +46,7 @@ void enviaMensagemCliente(comCliente* coms) {
     fdr = open(coms->pipeCliente, O_WRONLY);
     n = write(fdr, coms, sizeof(comCliente));
     close(fdr);
-    puts(" ");
+    // puts(" ");
 
 }
 

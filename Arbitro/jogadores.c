@@ -71,9 +71,10 @@ info *adicionaCliente(info *jogadores, int *nJogadores, comCliente *coms, char *
 info preencheDadosCliente(comCliente* coms) {
 
     info novo;
-
+    novo.intComunicacao = 1;
     novo.pidCliente = coms->pid;
     strcpy(novo.pipeCliente, coms->pipeCliente);
+    sprintf(novo.pipeThread, FIFO_THR, novo.pidCliente);
     strcpy(novo.nomeJogador, coms->nomeJogador);
 
     return novo;
@@ -140,3 +141,12 @@ void libertaJogadores(info* jogadores, int* nJogadores) {
     }
 
 }
+
+/*
+info* obtemJogadorPorPIDCliente(info* jogadores, const int* nJogadores, const int* pidCliente) {
+
+    for(int i = 0; i < *nJogadores; ++i)
+        if (jogadores[i].pidCliente == pidCliente)
+            return &jogadores[i];
+    return NULL;
+}*/
