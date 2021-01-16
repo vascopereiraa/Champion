@@ -65,6 +65,9 @@ info *adicionaCliente(info *jogadores, int *nJogadores, comCliente *coms, char *
     jogadores[(*nJogadores)] = preencheDadosCliente(coms);
     strcpy(jogadores[(*nJogadores)++].nomeJogo, sorteiaJogos(jogos, nJogos));
 
+    printf("\n\nPonteiro jogadores: %p\n\n", nJogadores);
+    printf("%d\n\n", *nJogadores);
+
     return jogadores;
 }
 

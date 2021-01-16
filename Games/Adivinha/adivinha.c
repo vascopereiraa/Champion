@@ -16,8 +16,6 @@
 
 #include "../sinais.h"
 
-#define LIM 50
-
 int pontuacao = 0;
 
 int main () {
@@ -95,13 +93,5 @@ int main () {
         }
 
         ++count;
-    } while(count < LIM);
-
-	puts("-------------------------------------------------------------");
-    printf("Pontuacao Final: %d\n\n", pontuacao);
-    fflush(stdout);
-    printf("fimJogo\n");
-    fflush(stdout);
-    
-    exit(pontuacao);
+    } while(1);
 }

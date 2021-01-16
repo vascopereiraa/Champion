@@ -31,7 +31,7 @@ typedef struct {
 } info;
 
 info* jogadores;
-int nJogadores;
+extern int nJogadores;
 
 // Lista de Jogadores em execucao
 int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms);

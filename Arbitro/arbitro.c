@@ -107,7 +107,6 @@ void obtemJogoCliente(comCliente* coms, info* jogadores, const int* nJogadores) 
 char* sorteiaJogos(char** jogos, const int* nJogos) {
 
     int valor;
-    srand(time(NULL));
 
     if((*nJogos) == 0) {
         printf("[ERRO] Nao exitem jogos disponiveis para sortear!");
@@ -211,8 +210,11 @@ void iniciaCampeonato() {
     decorreCampeonato = 1;
 
     // Inicia a comunicacao entre o Cliente e Jogo
-    for(int i = 0; i < nJogadores; ++i)
+    printf("\n\nPonteiro jogadores: %p\n\n", &nJogadores);
+    printf("\n\nnJogadores: %d\n\n", nJogadores);
+    for(int i = 0; i < nJogadores; ++i) {
         jogadores[i].intComunicacao = 0;
+    }
 
 }
 
@@ -234,14 +236,19 @@ void terminaCampeonato() {
 
 int main(int argc, char* argv[]) {
 
+    // Inicializacao do gerador de random
+    srand(time(NULL));
+
     int fd, res, n;
     char cmd[200], **jogos = NULL;
     comCliente coms;
     int nJogos = 0;
     pthread_t* listaThreads = NULL;
+    int nThreads = 0;
     pthread_t temporizador;
     pthread_mutex_t trincoComunicacao;
     pthread_mutex_t trincoAddJogadores;
+    nJogadores = 0;
 
     // Definicao do Ambiente
     setup = initialization(argc, argv);
@@ -279,58 +286,70 @@ int main(int argc, char* argv[]) {
                 n = read(fd, &coms, sizeof(comCliente));
 
                 // Verifica se o cliente já está registado no arbitro (Nomes iguais)
-                if(verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
-                   // Verifica se excede o numero maximo de jogadores
-                   if (nJogadores < setup.MAXPLAYERS) {
+                if (verificaNomeCliente(jogadores, &nJogadores, &coms) == 0) {
+                    // Verifica se excede o numero maximo de jogadores
+                    if (nJogadores < setup.MAXPLAYERS) {
+                        // Adicionar veificacao do TIMER a correr
+                        // Se tiver a correr nao pode entrar
+                        // Adicionar PID desse cliente a uma lista de espera para jogar depois do campeonato terminar
 
-                       pthread_mutex_lock(&trincoAddJogadores);
+                        pthread_mutex_lock(&trincoAddJogadores);
 
-                       // Adicionar o jogador a lista de jogadores & cria uma nova thread na lista de threads
-                       jogadores = adicionaCliente(jogadores, &nJogadores, &coms, jogos, &nJogos);
+                        // Adicionar o jogador a lista de jogadores & cria uma nova thread na lista de threads
+                        jogadores = adicionaCliente(jogadores, &nJogadores, &coms, jogos, &nJogos);
 
-                       pthread_t* temp = (pthread_t*) realloc(listaThreads, sizeof(pthread_t) * nJogadores);
-                       if(temp == NULL) {
-                           fprintf(stderr, "[ERRO] Nao foi possivel acrescentar thread à lista de threads!\n");
-                           exit(9);
-                       }
-                       listaThreads = temp;
+                        pthread_t *temp = (pthread_t *) realloc(listaThreads, sizeof(pthread_t) * (nThreads + 1));
+                        if (temp == NULL) {
+                            fprintf(stderr, "[ERRO] Nao foi possivel acrescentar thread à lista de threads!\n");
+                            exit(9);
+                        }
 
-                       // Mandar o Cliente trocar o canal de comunicacao
-                       coms.cdgErro = 6;
-                       enviaMensagemCliente(&coms);
+                        listaThreads = temp;
+                        ++nThreads;
 
-                       jogadores[nJogadores - 1].trinco = &trincoComunicacao;
+                        // Mandar o Cliente trocar o canal de comunicacao
+                        coms.cdgErro = 6;
+                        enviaMensagemCliente(&coms);
 
-                       // Criar a thread
-                       pthread_create(&listaThreads[nJogadores - 1], NULL, threadsClientes, (void *) &jogadores[nJogadores - 1]);
+                        jogadores[nJogadores - 1].trinco = &trincoComunicacao;
 
-                       // Verificar temporizacao
-                       if(nJogadores == 2 && timer == 0) {
-                           timer = 1;
-                           pthread_create(&temporizador, NULL, threadTemporizacao, NULL);
-                       }
+                        // Criar a thread
+                        if (nThreads == nJogadores)
+                            pthread_create(&listaThreads[nThreads - 1], NULL, threadsClientes,
+                                           (void *) &jogadores[nJogadores - 1]);
+                        else {
+                            fprintf(stderr, "[ERRO] Nao foi possivel executar a thread do Jogador\n");
+                            exit(7);
+                        }
 
-                       pthread_mutex_unlock(&trincoAddJogadores);
-                   }
-                   else {
-                       coms.cdgErro = 5;
-                       enviaMensagemCliente(&coms);
-                   }
+                        // Verificar temporizacao
+                        if (nJogadores == 2 && timer == 0) {
+                            timer = 1;
+                            pthread_create(&temporizador, NULL, threadTemporizacao, NULL);
+                        }
+
+                        pthread_mutex_unlock(&trincoAddJogadores);
+                    } else {
+                        coms.cdgErro = 5;
+                        enviaMensagemCliente(&coms);
+                    }
                 }
-                // Caso o nome do Cliente seja igual a um nome ja registado
+                    // Caso o nome do Cliente seja igual a um nome ja registado
                 else {
-                   // PID do Cliente ainda nao existe na lista
-                   if(verificaPidCliente(jogadores, &nJogadores, &coms) == 0)
-                       coms.cdgErro = 1;
-                   // Caso o PID do Cliente já exista na lista de jogadores
-                   else
-                       coms.cdgErro = 0;
+                    // PID do Cliente ainda nao existe na lista
+                    if (verificaPidCliente(jogadores, &nJogadores, &coms) == 0)
+                        coms.cdgErro = 1;
+                        // Caso o PID do Cliente já exista na lista de jogadores
+                    else
+                        coms.cdgErro = 0;
                 }
 
                 // Envia mensagem ao Cliente
                 enviaMensagemCliente(&coms);
 
             }
+
+    // Rever condicao de termino e permitir a repeticao do campeonato no final de cada periodo
     } while(strcmp(cmd, "exit") != 0);
 
     // Avisar os Clientes e Jogos que o Arbitro encerrou

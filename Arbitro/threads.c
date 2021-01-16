@@ -33,7 +33,6 @@ void* threadsClientes(void* dados_t) {
 
     // Criacao do NamedPipe exclusivo do Jogador
     fd_set fds;
-    printf("%s", dados->pipeThread);
     fd = criaPipeArbitro(&fds, dados->pipeThread);
 
     // Cria o filho -->> Jogo sorteado
@@ -144,22 +143,19 @@ void* threadsClientes(void* dados_t) {
                 coms->cdgErro = 0; */
                 printf("\nMensagem recebida: %s\n", coms->mensagem);
                 fflush(stdout);
-                if (strcmp(coms->mensagem, "fimJogo\n") == 0) {
-                    abort = 1;
-
-                    // Apanhar o exit status do jogo
-                    wait(&estado);
-                    if (WIFEXITED(estado))
-                        printf("\nPontuacao: %d\n", WEXITSTATUS(estado));
-                } else
-                    enviaMensagemCliente(coms);
+                enviaMensagemCliente(coms);
             }
 
         }
         pthread_mutex_unlock(dados->trinco);
 
-    } while(!abort);
+    } while(strcmp(coms->resposta, "#quit") != 0);
 
+    // Terminar jogo & Colocar pid do jogo a -1
+
+    // Armazenar pontuacao e enviar ao jogador
+
+    // Fechar thread do arbitro para o determinado cliente
 
 }
 
@@ -167,13 +163,19 @@ void* threadTemporizacao() {
 
     // Temporiza a espera
     printf("\nCampeonato prestes a começar!\n");
-        // Enviar uma mensagem aos clientes
     fflush(stdout);
-    sleep(setup.WAIT * 60);
+
+    // Enviar uma mensagem aos clientes
+
+
+    // sleep(setup.WAIT * 60);
+    sleep(10);
 
     // Mandar o campeonato executar
     iniciaCampeonato();
-        // Enviar mensagem aos clientes
+
+    // Enviar mensagem aos clientes
+
 
     // Temporizar o campeonato
     sleep(setup.DURATION * 60);
