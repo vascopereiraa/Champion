@@ -26,10 +26,20 @@ int max(int a, int b) {
     return (a > b) ? a : b;
 }
 
+void signalThread(int s, siginfo_t* info, void* context) {
+
+}
+
 void* threadsClientes(void* dados_t) {
 
     int fd;
     info* dados = (info*) dados_t;
+
+    // Sinal para fechar a thread --> Salta SELECT
+    struct sigaction actionEndGame;
+    actionEndGame.sa_sigaction = signalThread;
+    actionEndGame.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR2, &actionEndGame, NULL);
 
     // Criacao do NamedPipe exclusivo do Jogador
     fd_set fds;
@@ -85,7 +95,6 @@ void* threadsClientes(void* dados_t) {
     strcpy(coms->pipeArbitro, dados->pipeThread);
     strcpy(coms->nomeJogador, dados->nomeJogador);
 
-    int abort = 0;
     do {
         // Definicao dos descritores abertos
         FD_ZERO(&fds);
@@ -102,21 +111,24 @@ void* threadsClientes(void* dados_t) {
                 // Tratamento da resposta do Cliente
                 if(coms->resposta[0] == '#') {
                     // Mensagem destinada ao Arbitro
-                    trataComandosCliente(coms, jogadores, &nJogadores);
+                    trataComandosCliente(coms, &nJogadores, jogadores);
                     enviaMensagemCliente(coms);
 
                     if(strcmp(coms->resposta, "#quit") == 0)
-                        abort = 1;
+                        dados->abort = 1;
+
                 }
                 else {
-                    strcat(coms->resposta, "\n");
-                    printf("\nMensagem a enviar: %s\n", coms->resposta);
-                    fflush(stdout);
+                    if (dados->intComunicacao == 0) {
+                        strcat(coms->resposta, "\n");
+                        // printf("\nMensagem a enviar: %s\n", coms->resposta);
+                        fflush(stdout);
 
-                    // Mensagem destinada ao Jogo
-                    n = write(canalArb_Jogo[1], coms->resposta, strlen(coms->resposta));
-                    printf("\n\nEnviado para o jogo: %d\n", n);
-                    fflush(stdout);
+                        // Mensagem destinada ao Jogo
+                        n = write(canalArb_Jogo[1], coms->resposta, strlen(coms->resposta));
+                        // printf("\n\nEnviado para o jogo: %d\n", n);
+                        fflush(stdout);
+                    }
                 }
             }
             else {
@@ -135,13 +147,13 @@ void* threadsClientes(void* dados_t) {
             if (sel > 0 && FD_ISSET(canalJogo_Arb[0], &fds)) {
                 memset(coms->mensagem, 0, BUFF_SIZE);
                 n = read(canalJogo_Arb[0], coms->mensagem, sizeof(coms->mensagem));
-                printf("\nEntra do jogo: %d\n", n);
+                // printf("\nEntra do jogo: %d\n", n);
                 fflush(stdout);
                 coms->mensagem[n] = '\0';
                 /* if ((n > 0) && (coms->mensagem[strlen(coms->mensagem) - 1] == '\n'))
                     coms->mensagem[strlen(coms->mensagem) - 1] = '\0';
                 coms->cdgErro = 0; */
-                printf("\nMensagem recebida: %s\n", coms->mensagem);
+                // printf("\nMensagem recebida: %s\n", coms->mensagem);
                 fflush(stdout);
                 enviaMensagemCliente(coms);
             }
@@ -149,37 +161,58 @@ void* threadsClientes(void* dados_t) {
         }
         pthread_mutex_unlock(dados->trinco);
 
-    } while(strcmp(coms->resposta, "#quit") != 0);
+    } while(dados->abort == 0);
 
-    // Terminar jogo & Colocar pid do jogo a -1
+    // Matar o jogo
+    union sigval value;
+    sigqueue(dados->pidJogo, SIGUSR1, value);
 
     // Armazenar pontuacao e enviar ao jogador
+    int status;
+    waitpid(dados->pidJogo, &status, 0);
+    if(WIFEXITED(status))
+        dados->pontuacao = WEXITSTATUS(status);
+
+    // Fechar o NamedPipe do Arbitro
+    close(fd);
+    unlink(dados->pipeThread);
+    remove(dados->pipeThread);
 
     // Fechar thread do arbitro para o determinado cliente
-
+    pthread_exit(NULL);
 }
 
 void* threadTemporizacao() {
+
+    // Acordar dos sleeps em caso de fim
+    struct sigaction actionEndGame;
+    actionEndGame.sa_sigaction = signalThread;
+    actionEndGame.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR2, &actionEndGame, NULL);
+
+    acao action = inicio;
 
     // Temporiza a espera
     printf("\nCampeonato prestes a começar!\n");
     fflush(stdout);
 
     // Enviar uma mensagem aos clientes
-
+    enviaMensagemTodosClientes(jogadores, action);
 
     // sleep(setup.WAIT * 60);
-    sleep(10);
+    sleep(5);
 
     // Mandar o campeonato executar
     iniciaCampeonato();
-
-    // Enviar mensagem aos clientes
-
+    printf("\n[AVISO] O Campeonato comecou...\n");
 
     // Temporizar o campeonato
-    sleep(setup.DURATION * 60);
+    //sleep(setup.DURATION * 60);
+    sleep(60);
 
     // Mandar o campeonato terminar
     terminaCampeonato();
+
+    pthread_exit(NULL);
+
 }
