@@ -188,16 +188,14 @@ void* threadTemporizacao() {
     // Enviar uma mensagem aos clientes
     enviaMensagemTodosClientes(jogadores, action);
 
-    // sleep(setup.WAIT * 60);
-    sleep(2);
+    sleep(setup.WAIT * 60);
 
     // Mandar o campeonato executar
     iniciaCampeonato();
     printf("\n[AVISO] O Campeonato comecou...\n");
 
     // Temporizar o campeonato
-    // sleep(setup.DURATION * 60);
-    sleep(25);
+    sleep(setup.DURATION * 60);
 
     // Mandar o campeonato terminar
     terminaCampeonato();
