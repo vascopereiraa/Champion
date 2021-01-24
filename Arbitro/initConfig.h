@@ -25,7 +25,7 @@ typedef struct {
     char *GAMEDIR;
 } init;
 
-init setup;
+extern init setup;
 
 char* getGamedir();
 int getMaxPlayers();

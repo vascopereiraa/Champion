@@ -47,6 +47,7 @@ void* threadsClientes(void* dados_t) {
 
     // Cria o filho -->> Jogo sorteado
     int estado, pid, res, canalJogo_Arb[2], canalArb_Jogo[2];
+
     // Criar o pipe anonimo de comunicaocao com o filho
     pipe(canalJogo_Arb);
     pipe(canalArb_Jogo);
@@ -55,7 +56,6 @@ void* threadsClientes(void* dados_t) {
     res = fork();
     if(res == 0) {
         pid = getpid();
-        // printf("[%4d] Sou o filho\n", pid);
 
         // Atribuir saida e entrada de dados para o pipe
         close(canalJogo_Arb[0]);
@@ -103,31 +103,27 @@ void* threadsClientes(void* dados_t) {
 
         sel = select(max(fd, canalJogo_Arb[0]) + 1, &fds, NULL, NULL, NULL);
         pthread_mutex_lock(dados->trinco);
+
         // Caso receba dados pelo seu NamedPipe
         if(sel > 0 && FD_ISSET(fd, &fds)) {
+
             // Ler informacao passada pelo NamedPipe
             n = read(fd, coms, sizeof(comCliente));
             if(coms->pid == dados->pidCliente) {
+
                 // Tratamento da resposta do Cliente
                 if(coms->resposta[0] == '#') {
+
                     // Mensagem destinada ao Arbitro
-                    trataComandosCliente(coms, &nJogadores, jogadores);
+                    trataComandosCliente(coms);
                     enviaMensagemCliente(coms);
-
-                    if(strcmp(coms->resposta, "#quit") == 0)
-                        dados->abort = 1;
-
                 }
                 else {
                     if (dados->intComunicacao == 0) {
                         strcat(coms->resposta, "\n");
-                        // printf("\nMensagem a enviar: %s\n", coms->resposta);
-                        fflush(stdout);
 
                         // Mensagem destinada ao Jogo
                         n = write(canalArb_Jogo[1], coms->resposta, strlen(coms->resposta));
-                        // printf("\n\nEnviado para o jogo: %d\n", n);
-                        fflush(stdout);
                     }
                 }
             }
@@ -147,14 +143,7 @@ void* threadsClientes(void* dados_t) {
             if (sel > 0 && FD_ISSET(canalJogo_Arb[0], &fds)) {
                 memset(coms->mensagem, 0, BUFF_SIZE);
                 n = read(canalJogo_Arb[0], coms->mensagem, sizeof(coms->mensagem));
-                // printf("\nEntra do jogo: %d\n", n);
-                fflush(stdout);
                 coms->mensagem[n] = '\0';
-                /* if ((n > 0) && (coms->mensagem[strlen(coms->mensagem) - 1] == '\n'))
-                    coms->mensagem[strlen(coms->mensagem) - 1] = '\0';
-                coms->cdgErro = 0; */
-                // printf("\nMensagem recebida: %s\n", coms->mensagem);
-                fflush(stdout);
                 enviaMensagemCliente(coms);
             }
 
@@ -187,7 +176,7 @@ void* threadTemporizacao() {
     // Acordar dos sleeps em caso de fim
     struct sigaction actionEndGame;
     actionEndGame.sa_sigaction = signalThread;
-    actionEndGame.sa_flags = SA_SIGINFO;
+    actionEndGame.sa_flags = 0;
     sigaction(SIGUSR2, &actionEndGame, NULL);
 
     acao action = inicio;
@@ -200,15 +189,15 @@ void* threadTemporizacao() {
     enviaMensagemTodosClientes(jogadores, action);
 
     // sleep(setup.WAIT * 60);
-    sleep(5);
+    sleep(2);
 
     // Mandar o campeonato executar
     iniciaCampeonato();
     printf("\n[AVISO] O Campeonato comecou...\n");
 
     // Temporizar o campeonato
-    //sleep(setup.DURATION * 60);
-    sleep(60);
+    // sleep(setup.DURATION * 60);
+    sleep(25);
 
     // Mandar o campeonato terminar
     terminaCampeonato();

@@ -147,10 +147,8 @@ void removeJogador(int* nJogadores, char* jogadorRemover, int* res) {
 info* libertaJogadores(info* jogadores, int* nJogadores) {
 
     info* aux;
-    printf("\nEliminar TODOS\n\n");
     while(jogadores != NULL) {
         aux = jogadores;
-        printf("\nNome: %s\n", aux->nomeJogador);
         jogadores = jogadores->next;
         free(aux->thread);
         free(aux);
@@ -223,4 +221,3 @@ info* obtemVencedor(info* jogadores) {
     return vencedor;
 }
 
-// void listaPontuacoes(info* jogadores);

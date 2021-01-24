@@ -60,11 +60,11 @@ char* sorteiaJogos(char** jogos, const int* nJogos);
 // Comandos do Administrador
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
                     const int* nJogos);
-void trataComandosCliente(comCliente* comando, int*nJogadores, info* jogadores);
+void trataComandosCliente(comCliente* comando);
 
 // Gestao do Campeonato
 void iniciaCampeonato();
 void terminaCampeonato();
-void terminaTodasThreads(info* jogadores);
+void terminaTodasThreads();
 
 #endif //ARBITRO_ARBITRO_H

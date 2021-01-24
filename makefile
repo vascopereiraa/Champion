@@ -45,7 +45,7 @@ jogo: Games/g_perguntas Games/g_adivinha
 	
 # Executavel do Arbitro
 arbitro: Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o Arbitro/threads.o
-	gcc -o arbitro Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o Arbitro/threads.o -l pthread
+	gcc -o arbitro Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o Arbitro/threads.o -l pthread -Wall -Wextra
 	 
 # Executavel do Cliente
 cliente: Cliente/cliente.o

@@ -129,7 +129,7 @@ char* sorteiaJogos(char** jogos, const int* nJogos) {
     return " ";
 }
 
-void terminaTodasThreads(info* jogadores) {
+void terminaTodasThreads() {
 
     info* aux = jogadores;
     while(aux != NULL) {
@@ -138,7 +138,6 @@ void terminaTodasThreads(info* jogadores) {
         pthread_join(*(aux->thread), NULL);
         aux = aux->next;
     }
-
 }
 
 void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char** jogos,
@@ -170,7 +169,7 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
                 removeJogador(nJogadores, jogadorRemover, &res);
                 if ( res == 1 ) {
                     /* TERMINAR O CLIENTE E JOGO */
-                    printf("[AVISO] O jogador %s foi removido com sucesso!", jogadorRemover);
+                    printf("[AVISO] O jogador %s foi removido com sucesso!\n", jogadorRemover);
 
                     // Mandar mensagem ao cliente para terminar a execucao
                     comCliente coms;
@@ -181,7 +180,10 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
 
                     // Verifica condicao de fim de campeonato
                     if(*nJogadores == 1 && decorreCampeonato != 0){
-                        terminaCampeonato();
+                        // Fechar a thread do temporizador
+                        pthread_kill(temporizador, SIGUSR2);
+                        pthread_join(temporizador, NULL);
+                        decorreCampeonato = 2;
                     }
 
                     free(jogadorRemover);
@@ -304,7 +306,6 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
             pthread_kill(temporizador, SIGUSR2);
             pthread_join(temporizador, NULL);
             decorreCampeonato = 3;
-            strcpy(comando, " ");
             return;
         }
         else
@@ -314,7 +315,7 @@ void gestorComandos(char* comando, info* jogadores, int* nJogadores, const char*
     puts("[AVISO] O comando pretendido nao se encontra definido\n");
 }
 
-void trataComandosCliente(comCliente* coms, int* nJogadores, info* jogadores) {
+void trataComandosCliente(comCliente* coms) {
 
     if(strcmp(coms->resposta, "#mygame") == 0) {
         obtemJogoCliente(coms, jogadores);
@@ -323,14 +324,19 @@ void trataComandosCliente(comCliente* coms, int* nJogadores, info* jogadores) {
     if(strcmp(coms->resposta, "#quit") == 0) {
         char nomeJogador[200];
         strcpy(nomeJogador, coms->nomeJogador);
+
         int res;
-        removeJogador(nJogadores, nomeJogador, &res);
-        if(res == 1) {
+        removeJogador(&nJogadores, nomeJogador, &res);
+        if (res == 1) {
             printf("[AVISO] O jogador %s desistiu do campeonato\n", nomeJogador);
 
-            if(*nJogadores == 1 && decorreCampeonato != 0)
-                terminaCampeonato();
-
+            // Verifica condicao de fim de campeonato
+            if(nJogadores == 1 && decorreCampeonato != 0){
+                // Fechar a thread do temporizador
+                pthread_kill(temporizador, SIGUSR2);
+                pthread_join(temporizador, NULL);
+                decorreCampeonato = 2;
+            }
         }
     }
 
@@ -356,19 +362,21 @@ void terminaCampeonato() {
     decorreCampeonato = 2;
 
     // Fechar todas as threads, fechar todos os jogos e guardar o exit status
-    printf("O Campeonato chegou ao Fim!\n");
-    terminaTodasThreads(jogadores);
+    printf("[AVISO] O Campeonato chegou ao Fim!\n");
+    terminaTodasThreads();
 
     // Anunciar o vencedor
     acao action = fim;
     enviaMensagemTodosClientes(jogadores, action);
-
     info* vencedor = obtemVencedor(jogadores);
     printf("[FIM DO CAMPEONATO] O vencedor do Campeonato foi o %s com a "
-           "pontuacao total de %d pontos\n", vencedor->nomeJogador, vencedor->pontuacao);
+           "pontuacao total de %d pontos\n\n", vencedor->nomeJogador, vencedor->pontuacao);
 
     // Envia sinal para desbloquar SELECT
     pthread_kill(mainThread, SIGUSR2);
+
+    // Fechar a thread de temporizacao
+    pthread_exit(NULL);
 }
 
 int main(int argc, char* argv[]) {
@@ -414,7 +422,8 @@ int main(int argc, char* argv[]) {
         decorreCampeonato = 0;
         nJogadores = 0;
         clientesEspera = NULL;
-        // system("clear");
+        jogadores = NULL;
+        // system("clear");  // (Limpar o ecra)
         printInit(setup);
         printf("\n\n\tBem-Vindo Administrador!\nArbitro do Campeonato nr. %d do Sistema Champion!\n\n", ++count);
 
@@ -453,12 +462,11 @@ int main(int argc, char* argv[]) {
                                 jogadores->trinco = &trincoComunicacao;
 
                                 // Aloca espaco para a thread
-                                pthread_t *temp = (pthread_t *) malloc(sizeof(pthread_t));
-                                if (temp == NULL) {
+                                jogadores->thread = (pthread_t *) malloc(sizeof(pthread_t));
+                                if (jogadores->thread == NULL) {
                                     fprintf(stderr, "[ERRO] Nao foi possivel acrescentar thread à lista de threads!\n");
                                     exit(9);
                                 }
-                                jogadores->thread = temp;
 
                                 // Criar a thread
                                 pthread_create(jogadores->thread, NULL, threadsClientes,
@@ -474,7 +482,7 @@ int main(int argc, char* argv[]) {
                                 // Caso o jogador tenha as caracteristicas necessarias
                                 // mas um campeonato encontra-se a decorrer
                             else {
-                                printf("CLIENTE %s TENTOU ENTRAR!\n", coms.nomeJogador);
+                                printf("\nCLIENTE %s TENTOU ENTRAR!\n", coms.nomeJogador);
 
                                 // ARRAY PID
                                 unsigned int* temp = (unsigned int*) realloc(clientesEspera, sizeof(int) * (nCliEspera + 1));
@@ -513,31 +521,26 @@ int main(int argc, char* argv[]) {
         } while (decorreCampeonato != 2 && (strcmp(cmd, "exit") != 0 && strcmp(cmd, "end") != 0));
 
         if(strcmp(cmd, "exit") == 0) {
-            puts("\n\nEntrei no comando exit\n\n");
             decorreCampeonato = 3;
         }
         else {
             decorreCampeonato = 0;
-            puts("\n\nEntrei no else do comando exit\n\n");
             // Apaga dados dos jogadores em memoria dinamica
             if (jogadores != NULL) {
-                puts("\n\nLibertar jogadores\n\n");
                 jogadores = libertaJogadores(jogadores, &nJogadores);
                 nJogadores = 0;
             }
         }
-        puts("\n\nPassei aqui 1\n\n");
+
         // Enviar sinal para acordar clientes a espera
         if (nCliEspera != 0 && clientesEspera != NULL) {
-            puts("\n\nLibertar lista de espera\n\n");
+
             avisaClientesEspera(clientesEspera, nCliEspera);
             free(clientesEspera);
             nCliEspera = 0;
         }
-        puts("\n\nPassei aqui 2\n\n");
-        sleep(5);
 
-        printf("\n\n decorreCampeonato = %d \n\n", decorreCampeonato);
+        // sleep(5);
     } while(decorreCampeonato != 3);
 
     // Avisar os Clientes e Jogos que o Arbitro encerrou

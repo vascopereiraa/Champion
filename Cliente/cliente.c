@@ -126,8 +126,7 @@ void trataCodigoErro(int* fd) {
             break;
 
         case 11:
-            printf("Encontra-se um Campeonato a decorrer!\nPoderá apenas entrar no proximo campeonato.\nNeste momento encontra-se a espera\n");
-            printf("\nDORME %ds\n", p->pontuacao);
+            printf("\nEncontra-se um Campeonato a decorrer!\nPoderá apenas entrar no proximo campeonato.\nNeste momento encontra-se a espera!\n");
             end = 1;
             sleep(p->pontuacao);        // Passado a duracao do campeonato
             p->cdgErro = 0;
@@ -237,8 +236,6 @@ int main() {
                 if (res > 0 && FD_ISSET(fdr, &fds)) {
                     // Ler a mensagem recebida do Arbitro
                     n = read(fdr, p, sizeof(comCliente));
-
-                    printf("\n\n%d\n\n", p->cdgErro);
 
                     // Trata de Erros na Comunicacao
                     if (p->cdgErro == 0) {
