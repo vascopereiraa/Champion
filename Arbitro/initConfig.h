@@ -25,6 +25,8 @@ typedef struct {
     char *GAMEDIR;
 } init;
 
+extern init setup;
+
 char* getGamedir();
 int getMaxPlayers();
 void getCmdLnArgs(int argc, char **argv, int* D, int* W);

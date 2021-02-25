@@ -134,7 +134,7 @@ void printInit(init a) {
      printf("Configuracoes do Arbitro: \n");
      printf("GAMEDIR: %s\n", a.GAMEDIR);
      printf("MAXPLAYERS: %d\n", a.MAXPLAYERS);
-     printf("DURATION: %d\n", a.DURATION);
-     printf("WAIT: %d\n", a.WAIT);
+     printf("DURATION: %d\n", a.DURATION * 60);
+     printf("WAIT: %d\n", a.WAIT * 60);
 }
 

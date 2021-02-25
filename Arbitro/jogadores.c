@@ -12,131 +12,212 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <pthread.h>
 
 #include "../Cliente/cliente.h"
 #include "arbitro.h"
 
-int verificaNomeCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
+int verificaNomeCliente(info* jogadores, char* nome) {
 
-    // Se a lista de jogadores tiver vazia
-    if(jogadores == NULL)
+    info* aux = jogadores;
+
+    while(aux != NULL && strcmp(aux->nomeJogador, nome) != 0)
+        aux = aux->next;
+    // Se o nao houver um jogador com esse nome registado
+    if(aux == NULL)
+        return 1;
+    else
         return 0;
-
-    // Verifica se o jogador existe na lista
-    for (int i = 0; i < *nJogadores; ++i) {
-        if(strcmp(jogadores[i].nomeJogador, coms->nomeJogador) == 0)
-            return 1;
-    }
-
-    // Caso o jogador nao exista na lista
-    return 0;
-}
-
-int verificaPidCliente(info* jogadores, const int* nJogadores, comCliente* coms) {
-
-    // Se a lista de jogadores tiver vazia
-    if(jogadores == NULL)
-        return 0;
-
-    // Verifica se o jogador existe na lista
-    for (int i = 0; i < *nJogadores; ++i) {
-        if(jogadores[i].pidCliente == coms->pid)
-            return 1;
-    }
-
-    // Caso o jogador nao exista na lista
-    return 0;
 
 }
 
-info *adicionaCliente(info *jogadores, int *nJogadores, comCliente *coms, char **jogos, const int *nJogos) {
+int verificaPidCliente(info* jogadores, comCliente* coms) {
 
-    info* array = NULL;
+    info* aux = jogadores;
 
-    // Realocar espaco para um novo jogador
-    array = realloc(jogadores, sizeof(info) * ((*nJogadores) + 1));
-    if(array == NULL) {
+    while(aux != NULL && aux->pidCliente != coms->pid)
+        aux = aux->next;
+    // Se o nao houver um jogador com esse PID registado
+    if(aux == NULL)
+        return 0;
+        // Caso ainda nao exista esse PID no sistema
+    else
+        return 1;
+
+}
+
+info* adicionaCliente(info *jogadores, int *nJogadores, comCliente *coms, char **jogos, const int *nJogos) {
+
+    // Alocar espaco para um novo jogador
+    info* novo = (info*) malloc(sizeof(info));
+    if(novo == NULL) {
         fprintf(stderr, "[ERRO] Erro ao adicionar novo cliente!\n");
         return jogadores;
     }
 
     // Preencher os dados do jogador
-    jogadores = array;
-    jogadores[(*nJogadores)] = preencheDadosCliente(coms);
-    strcpy(jogadores[(*nJogadores)++].nomeJogo, sorteiaJogos(jogos, nJogos));
+    novo = preencheDadosCliente(coms, novo);
+
+    // Sorteia o jogo para o jogador
+    strcpy(novo->nomeJogo, sorteiaJogos(jogos, nJogos));
+
+    // Insere node na lista ligada
+    novo->next = jogadores;
+    jogadores = novo;
+    ++(*nJogadores);
+
+    /*printf("\n\n[DEBUG] NOME: %s\tPIPECLI: %s", jogadores->nomeJogador,
+           jogadores->pipeCliente);*/
 
     return jogadores;
 }
 
-info preencheDadosCliente(comCliente* coms) {
+info* preencheDadosCliente(comCliente* coms, info* novo) {
 
-    info novo;
-
-    novo.pidCliente = coms->pid;
-    strcpy(novo.pipeCliente, coms->pipeCliente);
-    strcpy(novo.nomeJogador, coms->nomeJogador);
+    novo->intComunicacao = 1;
+    novo->pidCliente = coms->pid;
+    strcpy(novo->pipeCliente, coms->pipeCliente);
+    sprintf(novo->pipeThread, FIFO_THR, novo->pidCliente);
+    strcpy(novo->nomeJogador, coms->nomeJogador);
+    novo->pontuacao = 0;
+    novo->abort = 0;
 
     return novo;
 }
 
-void listaJogadores(const info* jogadores, const int* nJogadores) {
+void listaJogadores(info* jogadores) {
 
-    if((*nJogadores) == 0) {
+    info* aux = jogadores;
+
+    if(jogadores == NULL) {
         printf("[AVISO] Ainda nenhum jogador entrou no campeonato!\n");
-        return ;
-    }
-
-    for(int i = 0; i < (*nJogadores); ++i) {
-        printf("Jogador %d:\nNome: %s\nJogo: %s\n\n", i+1, jogadores[i].nomeJogador, jogadores[i].nomeJogo);
-    }
-
-}
-
-int existeJogador(info* jogadores, const int* nJogadores, char* jogadorRemover) {
-
-    for(int i = 0; i < (*nJogadores); ++i)
-        if(strcmp(jogadores[i].nomeJogador, jogadorRemover) == 0)
-            return i;
-
-    return -1;
-}
-
-int removeJogador(info** jogadores, int* nJogadores, const int* posicao) {
-
-    if((*nJogadores) == 1) {
-        free((*jogadores));
-        (*nJogadores) = 0;
-        return 1;
     }
     else {
-        info* original = *jogadores;
-        info t = original[(*posicao)];
-        info* aux = NULL;
-        original[(*posicao)] = original[(*nJogadores) - 1];
-        aux = (info*) realloc(original, sizeof(info) * ((*nJogadores) - 1));
-        if(aux != NULL) {
-            original = aux;
-            --(*nJogadores);
-            *jogadores = original;
-            return 1;
-        }
-        else {
-            *jogadores[(*posicao)] = t;
-            return 0;
+        int i = 1;
+        while (aux != NULL) {
+            printf("Jogador %d:\nNome: %s\nJogo: %s\n\n", i++, aux->nomeJogador, aux->nomeJogo);
+            aux = aux->next;
         }
     }
-
 }
 
-void libertaJogadores(info* jogadores, int* nJogadores) {
+void removeJogador(int* nJogadores, char* jogadorRemover, int* res) {
 
-    if((*nJogadores) == 0)
+    info *atual = jogadores;
+    info *anterior = NULL;
+
+    while (atual != NULL && strcmp(atual->nomeJogador, jogadorRemover) != 0) {
+        anterior = atual;
+        atual = atual->next;
+    }
+
+    // Caso nao exista
+    if (atual == NULL) {
+        printf("[AVISO] O jogador que pretende remover nao existe!\nNome: %s",
+               jogadorRemover);
+        *res = 0;
         return ;
+    }
+
+    // Caso seja o primeiro da lista
+    if (atual == jogadores) {
+        jogadores = jogadores->next;
+
+        // Fecha a thread -> A thread fecha o jogo
+        atual->abort = 1;
+        pthread_kill(*(atual->thread), SIGUSR2);
+        pthread_join(*(atual->thread), NULL);
+    }
     else {
-        free(jogadores);
-        jogadores = NULL;
-        (*nJogadores) = 0;
-        return ;
+        anterior->next = atual->next;
+
+        // Fecha a thread -> A thread fecha o jogo
+        atual->abort = 1;
+        pthread_kill(*(atual->thread), SIGUSR2);
+        pthread_join(*(atual->thread), NULL);
+    }
+    *res = 1;
+    free(atual);
+    --(*nJogadores);
+
+    return ;
+}
+
+info* libertaJogadores(info* jogadores, int* nJogadores) {
+
+    info* aux;
+    while(jogadores != NULL) {
+        aux = jogadores;
+        jogadores = jogadores->next;
+        free(aux->thread);
+        free(aux);
     }
 
+    return jogadores;
 }
+
+char* obtemNamedPipeCliente(info* jogadores, char* nomeJogador) {
+
+    info* aux = jogadores;
+
+    while(aux != NULL && strcmp(aux->nomeJogador, nomeJogador) != 0)
+        aux = aux->next;
+    // Se o já houver um jogador com esse nome registado
+    if(aux != NULL)
+        return aux->pipeCliente;
+        // Caso ainda nao exista esse nome no sistema
+    else
+        return " ";
+
+}
+
+char* obtemNamedPipeThread(info* jogadores, char* nomeJogador) {
+
+    info* aux = jogadores;
+
+    while(aux != NULL && strcmp(aux->nomeJogador, nomeJogador) != 0)
+        aux = aux->next;
+    // Se o já houver um jogador com esse nome registado
+    if(aux != NULL)
+        return aux->pipeThread;
+        // Caso ainda nao exista esse nome no sistema
+    else
+        return " ";
+
+}
+
+int obtemPidCliente(info* jogadores, char* nomeJogador) {
+
+    info* aux = jogadores;
+
+    while(aux != NULL && strcmp(aux->nomeJogador, nomeJogador) != 0)
+        aux = aux->next;
+    // Se o já houver um jogador com esse nome registado
+    if(aux != NULL)
+        return aux->pidCliente;
+    // Caso ainda nao exista esse nome no sistema
+    else
+        return -1;
+
+}
+
+info* obtemVencedor(info* jogadores) {
+
+    int max;
+    info* vencedor;
+    info* aux = jogadores;
+    max = aux->pontuacao;
+    vencedor = aux;
+    aux = aux->next;
+    while(aux != NULL) {
+        if(aux->pontuacao > max) {
+            max = aux->pontuacao;
+            vencedor = aux;
+        }
+        aux = aux->next;
+    }
+
+    return vencedor;
+}
+

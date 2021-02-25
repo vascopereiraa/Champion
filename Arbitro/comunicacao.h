@@ -14,10 +14,30 @@
 
 #include "arbitro.h"
 
+typedef enum {
+    inicio,
+    fim
+} acao;
+
 // Named Pipes
-int criaPipeArbitro(fd_set* fds);
+int criaPipeArbitro(fd_set* fds, char* pipe);
 void enviaMensagemCliente(comCliente* coms);
 void verificaLocalPipes();
-void terminaTodosClientes(info *jogadores, const int* nJogadores, int valor);
+void terminaTodosClientes(info *jogadores, int valor);
+void enviaMensagemTodosClientes(info* jogadores, acao action);
+
+// Funcoes de manipulacao de Threads
+void* threadsClientes(void* dados_t);
+void* threadTemporizacao();
+void signalThread(int s, siginfo_t* info, void* context);
+
+// Comunicacao entre Jogo e Cliente
+void trocaIntComs(info* jogadores);
+int intComsCliente(info* jogadores, char* nomeJogador);
+int retComsCliente(info* jogadores, char* nomeJogador);
+
+// Sinal
+void avisaClientesEspera(unsigned int* clientesEspera, int nCliEspera);
+void fechaClientesEspera(unsigned int* clientesEspera, int nCliEspera);
 
 #endif //ARBITRO_COMUNICACAO_H

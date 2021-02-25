@@ -23,7 +23,7 @@ int pontuacao = 0;
 
 int main() {
 
-    setbuf(stdout, NULL);
+    // setbuf(stdout, NULL);
 
     // Inicializacao da lista de perguntas
     perguntas lista[MAXPERGUNTAS] = {
@@ -181,7 +181,7 @@ int main() {
                     "Facebook",
                     1},
 
-            {"uando foi criado o primeiro smarthpone da história?",
+            {"Quando foi criado o primeiro smarthphone da história?",
                     "1994" ,
                     "2000",
                     "2001",
@@ -270,7 +270,7 @@ int main() {
                     "Ariano Suassuna, Raul Bopp e Quincas Borba",
                     "Bento Teixeira, Ricardo Reis e Haroldo de Campos",
                     "Alberto Caeiro, Ricardo Leite e Augusto de Campos",
-                    2 },
+                    1 },
 
             {"As pessoas de qual tipo sanguíneo são consideradas doadores universais?",
                     " Tipo A",
@@ -386,41 +386,42 @@ int main() {
     sigaction(SIGUSR1, &actionEndGame, NULL);
 
     // DESCRICAO
-    printf("                      JOGO DAS PERGUNTAS\n");
-    printf("O jogo consiste em acertar o maior numero de perguntas possivel.\n"
+    printf("                      JOGO DAS PERGUNTAS\n"
+    	   "O jogo consiste em acertar o maior numero de perguntas possivel.\n"
            "Sera apresentada a questao, seguida de 4 hipoteses de escolha. \n"
            "Para responder basta indicar o numero da solucao pretendida.\n");
 
     // Base do Jogo
-    for (int count = 0; count < MAXPERGUNTAS; count++) {
-        puts("-----------------------------------------------");
-        printf("Pergunta %d\tPontuacao: %d\n", count + 1, pontuacao);
-        printf("QUESTAO: %s\n", lista[count].pergunta);
-        printf("1: %s\t2: %s\n3: %s\t4: %s\n\n",
-               lista[count].respostas[0], lista[count].respostas[1],
-               lista[count].respostas[2], lista[count].respostas[3]);
+    int count = 0;
+    while(1) {
+        for (int i = 0; i < MAXPERGUNTAS; ++count, ++i) {
+            puts("-------------------------------------------------------------");
+            printf("Pergunta %d\tPontuacao: %d\n", count + 1, pontuacao);
+            printf("QUESTAO: %s\n", lista[i].pergunta);
+            printf("1: %s\t2: %s\n3: %s\t4: %s\n\n",
+                   lista[i].respostas[0], lista[i].respostas[1],
+                   lista[i].respostas[2], lista[i].respostas[3]);
 
-        int resposta, n;
-        do {
-            n = 0;
-            printf("RESPOSTA: ");
-            n = scanf("%d", &resposta);
-        } while(n == 0 || (resposta > 4 || resposta < 1));
+            fflush(stdout);
 
-        if(n == 1) {
-            if (resposta == lista[count].solucao) {
-                printf("Resposta Correta!\n");
-                pontuacao++;
-            } else {
-                printf("Resposta Errada!\n");
-                if (pontuacao > 0)
-                    pontuacao--;
+            int resposta, n;
+            do {
+                n = 0;
+                n = scanf("%d", &resposta);
+            } while (n == 0 || (resposta > 4 || resposta < 1));
+
+            if (n == 1) {
+                if (resposta == lista[i].solucao) {
+                    printf("Resposta Correta!\n");
+                    fflush(stdout);
+                    pontuacao++;
+                } else {
+                    printf("Resposta Errada!\n");
+                    fflush(stdout);
+                    if (pontuacao > 0)
+                        pontuacao--;
+                }
             }
         }
     }
-
-    puts("\n-----------------------------------------------");
-    printf("Pontuacao Final: %d\n\n", pontuacao);
-
-    exit(pontuacao);
 }

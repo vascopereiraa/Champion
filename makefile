@@ -15,7 +15,7 @@ Games/sinais.o: ./Games/sinais.c ./Games/sinais.h
 
 # Ficheiros *.o do Arbitro
 Arbitro/arbitro.o: ./Arbitro/arbitro.c ./Arbitro/arbitro.h ./Arbitro/initConfig.h ./Arbitro/comunicacao.h ./Cliente/cliente.h
-	gcc -c ./Arbitro/arbitro.c -o ./Arbitro/arbitro.o 
+	gcc -c ./Arbitro/arbitro.c -o ./Arbitro/arbitro.o
 
 Arbitro/initConfig.o: ./Arbitro/initConfig.c  ./Arbitro/initConfig.h 
 	gcc -c ./Arbitro/initConfig.c -o ./Arbitro/initConfig.o
@@ -25,6 +25,9 @@ Arbitro/comunicacao.o: ./Arbitro/comunicacao.c ./Arbitro/comunicacao.h ./Cliente
 
 Arbitro/jogadores.o: ./Arbitro/jogadores.c ./Arbitro/arbitro.h ./Cliente/cliente.h
 	gcc -c ./Arbitro/jogadores.c -o ./Arbitro/jogadores.o
+	
+Arbitro/threads.o: ./Arbitro/threads.c ./Arbitro/arbitro.h ./Cliente/cliente.h ./Arbitro/comunicacao.h ./Arbitro/initConfig.h 
+	gcc -c ./Arbitro/threads.c -o ./Arbitro/threads.o
 	
 # Ficheiros *.o do Cliente	
 Cliente/cliente.o: ./Cliente/cliente.c ./Cliente/cliente.h
@@ -41,8 +44,8 @@ Games/g_adivinha: Games/Adivinha/adivinha.o Games/sinais.o
 jogo: Games/g_perguntas Games/g_adivinha
 	
 # Executavel do Arbitro
-arbitro: Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o
-	gcc -o arbitro Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o
+arbitro: Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o Arbitro/threads.o
+	gcc -o arbitro Arbitro/arbitro.o Arbitro/initConfig.o Arbitro/comunicacao.o Arbitro/jogadores.o Arbitro/threads.o -l pthread -Wall -Wextra
 	 
 # Executavel do Cliente
 cliente: Cliente/cliente.o
@@ -51,3 +54,7 @@ cliente: Cliente/cliente.o
 # Limpa todos os ficheiros *.o criados
 clean:
 	find . -name '*.o' -delete
+	
+# Limpa todos os pipes
+clnpipe:
+	rm ./Pipes/*

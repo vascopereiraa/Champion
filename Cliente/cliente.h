@@ -14,9 +14,8 @@
 
 #define FIFO_ARB "./Pipes/pipeArbitro"
 #define FIFO_CLI "./Pipes/pipe%d"       // PIPE_CLIENTE -->> pipe + pid
+#define FIFO_THR "./Pipes/pipeArb%d" 	// PIPE_THREAD  -->> pipeArb + pid
 #define BUFF_SIZE 4096
-
-#include <signal.h>
 
 typedef struct {
     unsigned int pid;
@@ -25,6 +24,7 @@ typedef struct {
     char resposta[BUFF_SIZE];	// Cliente >> Arbitro -- Resposta do Cliente 
     unsigned int cdgErro;    // 0 -> Correu tudo na perfeicao
     char pipeCliente[200];
+    char pipeArbitro[200];
     int pontuacao;
 } comCliente;
 
@@ -35,6 +35,6 @@ void trataCodigoErro();
 void formataNome();
 
 // Comunicacao com o Arbitro
-void enviaMensagemArbitro(comCliente* coms);
+void enviaMensagemArbitro();
 
 #endif //CLIENTE_CLIENTE_H
