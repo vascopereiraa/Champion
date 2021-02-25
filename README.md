@@ -16,7 +16,7 @@ Grade: 100%
 Everythins could be done in the terminal app
 1. Define the Environment Variables: ` . ./env_vars `
 2. Compile the project: ` make `
-3. Run the manager: ` ./arbitro -d DURATION_OF_CHAMPIONSHIP -w WAIT_TIME_FOR_PLAYERS `
+3. Run the manager: ` ./arbitro -d DURATION_OF_CHAMPIONSHIP -w WAIT_TIME_FOR_PLAYERS ` <br>
     Both DURATION_OF_CHAMPIONSHIP and WAIT_TIME_FOR_PLAYERS are expressed in minutes
-4. Open a new terminal, for each Client you want to run is necessary open a new terminal window/tab
+4. Open a new terminal, for each Client you want to run is necessary open a new terminal window/tab <br>
    Just need to launch each one in his terminal ` ./cliente `
